@@ -58,6 +58,23 @@ void loop() {
   // put your main code here, to run repeatedly:
 }
 
+//-----------------------------------------------------------------
+//read from register of IMU
+uint16_t readGyroYaw(){
+  return (readRegister(GYRO_ZOUT_H)<<8 | readRegister(GYRO_ZOUT_H+1)); //read the angular acceleration of the gyroscope.
+}
+
+//-----------------------------------------------------------------
+//read from register of IMU
+uint16_t readAccelYaw(){
+  uint16_t accelXBinary = ((readRegister(ACCEL_XOUT_H)<<8) | (readRegister(ACCEL_XOUT_H+1)));  //read the 16 bit binary X acceleration value
+  uint16_t accelYBinary = ((readRegister(ACCEL_YOUT_H)<<8) | (readRegister(ACCEL_YOUT_H+1)));  //read the 16 bit binary Y acceleration value
+  
+  float accelXConverted = accelXBinary/accelSensisity; //divides the number by sensitivity constant to get X acceleration is multiple of gravity
+  float accelYConverted = accelYBinary/accelSensisity; //divides the number by sensitivity constant to get Y acceleration is multiple of gravity
+
+  return atan2(accelYConverted, accelXConverted) * (180 / M_PI); //angle calculated with opposite/adjacent (y/x) and the converted from radians to degrees
+}
 
 
 //-----------------------------------------------------------------
