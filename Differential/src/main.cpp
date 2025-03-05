@@ -8,15 +8,17 @@
 //Registers
 
 //Gyro Registers
-#define GYRO_CONFIG 0x1B //Gyro config to change dps to 250
+#define GYRO_CONFIG 0x1B //Gyro config address
 #define GYRO_ZOUT_H 0x47 //Yaw Axis | High Byte
 
 //Accelerometer Registers
+#define ACCEL_CONFIG 0x1C //Accelerometer config address
 #define ACCEL_XOUT_H 0x3B //Accerleration in the turning direction | High Byte
 #define ACCEL_YOUT_H 0x3D //Acceleration in forward and back tilt  | High Byte
 
 //Power Registers
 #define PWR_MGMT_1 0x6B   //Used to wake up sensor
+
 
 //-----------------------------------------------------------------
 //Pin Declarations
@@ -26,10 +28,16 @@
 #define SCK 13  //SPI Clock
 
 //-----------------------------------------------------------------
+//Global Variables
+unsigned long lastGyroTime = 0; //stores last time gyro was updated to get dt
+float yawAngle = 0;             //stores steering wheel angle
+float gyroSensitivity = 131;    //Gyrosensitivy scale factor (LSB/(º/s)) (Register Map 3.1) | Means that for every º/s, the least significant bit changes by 131
+float accelSensisity = 16384;   //Acceleromter Sensitity Factor (LSB/g) (Register Map 3.2) | Means that for every g multiple of gravity, the least significant bit changes by 16384
+
+//-----------------------------------------------------------------
 //Function Declarations
 void writeRegister(uint8_t address, uint8_t data);
 uint8_t readRegister(uint8_t address);
-
 
 
 void setup() {
@@ -41,12 +49,16 @@ void setup() {
   digitalWrite(CS, HIGH); //turn off SPI communication by default
 
   writeRegister(PWR_MGMT_1, 0x00); //Wake Up IMU
-  writeRegister()
+  writeRegister(GYRO_CONFIG, 0x00); //sets GYRO to ±250°/s
+  writeRegister(ACCEL_CONFIG, 0x00); //sets ACCEL to 2g
+
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 }
+
+
 
 //-----------------------------------------------------------------
 //write to register of IMU
