@@ -21,7 +21,7 @@
 
 #define HALL_OVERSAMPLE 4     // Hall oversampling count. More on this in the getHalls() function
 
-uint8_t hallToMotor[8] = {255, 255, 255, 255, 255, 255, 255, 255};
+uint8_t hallToMotor[8] = {255, 1, 3, 2, 5, 0, 4, 255}; // PROBLEM: how to know phase order? 
 
 // Forward declarations
 void identifyHalls();
