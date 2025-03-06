@@ -32,7 +32,16 @@ comment out the
 
 "identifyHalls();"
 
-at the end of setup. Instead, we want to out hallToMotor for our purposes. 
+at the end of setup. This is because it:
+
+1. Introduces a 120 degree prediction of where it will be 2 states from now
+ - that is great for high speeds, 
+ - but for slow speeds it will mean the motor is always doing the wrong thing
+
+2. We have a set hall effect orientation. Once we deterrmine the right hallToMotor
+ - the wheels always turn the same way, meaning our order sould be constant
+
+Instead, we want to out hallToMotor for our purposes. 
 Below, I wrote two hallToMotor[] declarations. I'm not super confident that it will work, 
 but if I am understanding the idea correctly one of the two hallToMotor arrays should
 be correct. 
