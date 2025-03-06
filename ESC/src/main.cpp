@@ -1,7 +1,7 @@
 #include <Arduino.h>
-// #include <HardwareSerial.h>
+#include <HardwareSerial.h>
 
-#define HWSERIAL Serial1  // serial port for debugging, bluetooth 
+// #define HWSERIAL Serial1  // serial port for debugging, bluetooth 
 
 #define THROTTLE_PIN 14       // Throttle pin
 #define THROTTLE_LOW 150      // These LOW and HIGH values are used to scale the ADC reading. More on this below
@@ -10,8 +10,8 @@
 #define HALL_2_PIN 25
 #define HALL_3_PIN 26
 
-#define AH_PIN 16             // Pins from the Teensy to the gate drivers. AH = A high, etc
-#define AL_PIN 17
+#define AH_PIN 22             // Pins from the Teensy to the gate drivers. AH = A high, etc
+#define AL_PIN 23
 #define BH_PIN 18
 #define BL_PIN 19
 #define CH_PIN 20
@@ -32,6 +32,8 @@ uint8_t readThrottle();
 
 void setup() {                // The setup function is called ONCE on boot-up
   Serial.begin(115200);
+
+  analogReadResolution(10);  // Set ADC to 10-bit mode (0-1023)
   // HWSERIAL.begin(115200);
   
 
@@ -45,7 +47,10 @@ void setup() {                // The setup function is called ONCE on boot-up
   pinMode(CH_PIN, OUTPUT);
   pinMode(CL_PIN, OUTPUT);
 
+  analogWriteFrequency(AH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
   analogWriteFrequency(BH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
+  analogWriteFrequency(CH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
+
 
   pinMode(HALL_1_PIN, INPUT);         // Set the hall pins as input
   pinMode(HALL_2_PIN, INPUT);
@@ -63,7 +68,7 @@ void loop() {                         // The loop function is called repeatedly,
   {  
     uint8_t hall = getHalls();              // Read from the hall sensors
     uint8_t motorState = hallToMotor[hall]; // Convert from hall values (from 1 to 6) to motor state values (from 0 to 5) in the correct order. This line is magic
-    writePWM(motorState, throttle);         // Actually command the transistors to switch into specified sequence and PWM value
+    writePWM(motorState, 100);         // Actually command the transistors to switch into specified sequence and PWM value
   }
 
   // digitalWrite(LED_PIN, LOW);
@@ -139,14 +144,14 @@ void writePWM(uint8_t motorState, uint8_t dutyCycle)
  * For high sides, takes 0-255 for PWM value
  */
 
-void writePhases(uint8_t ah, uint8_t bh, uint8_t ch, uint8_t al, uint8_t bl, uint8_t cl)
+void writePhases(uint8_t ah, uint8_t bh, uint8_t ch, uint8_t al, uint8_t bl, uint8_t cl) //THIS IS THE PROBLEM
 {
   analogWrite(AH_PIN, ah);
   analogWrite(BH_PIN, bh);
   analogWrite(CH_PIN, ch);
-  analogWrite(AL_PIN, al);
-  analogWrite(BL_PIN, bl);
-  analogWrite(CL_PIN, cl);
+  digitalWriteFast(AL_PIN, al);
+  digitalWriteFast(BL_PIN, bl);
+  digitalWriteFast(CL_PIN, cl);
 }
 
 /* Read hall sensors WITH oversamping. This is required, as the hall sensor readings are often noisy.
