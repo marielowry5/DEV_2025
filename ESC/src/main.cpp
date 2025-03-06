@@ -23,6 +23,55 @@
 
 uint8_t hallToMotor[8] = {255, 1, 3, 2, 5, 0, 4, 255}; // PROBLEM: how to know phase order? 
 
+
+//Zane edit
+/*
+From looking at the code, if I am understanding it correctly, since our sensors are 
+always going the same direction and the positions don't change, I think we want to
+comment out the 
+
+"identifyHalls();"
+
+at the end of setup. Instead, we want to out hallToMotor for our purposes. 
+Below, I wrote two hallToMotor[] declarations. I'm not super confident that it will work, 
+but if I am understanding the idea correctly one of the two hallToMotor arrays should
+be correct. 
+
+
+
+hall equals:
+LSB - Hall1 Sensor
+2nd LSB - Hall2 Sensor
+3rd LSB - Hall3 Sensor
+
+Lets say Hall1 starts with only hall1 on and it goes towards state hall2
+
+Indexes 0 and 7 empty
+
+State 0: 0 0 1 : Index 1
+State 1: 0 1 1 : Index 3
+State 2: 0 1 0 : Index 2
+State 3: 1 1 0 : Index 6
+State 4: 1 0 0 : Index 4
+State 5: 1 0 1 : Index 5
+
+uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255};
+
+Could also go backwards/ towards hall 3
+
+State 0: 0 0 1 : Index 1
+State 1: 1 0 1 : Index 5
+State 2: 1 0 0 : Index 4
+State 3: 1 1 0 : Index 6
+State 4: 0 1 0 : Index 2
+State 5: 0 1 1 : Index 3
+
+uint8_t hallToMotor[8] = {255, 0, 4, 5, 2, 1, 3, 255};
+
+One of these should spin the motor forward, the other backward
+*/
+
+
 // Forward declarations
 void identifyHalls();
 void writePWM(uint8_t motorState, uint8_t dutyCycle);
