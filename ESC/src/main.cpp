@@ -1,6 +1,9 @@
 #include <Arduino.h>
+// #include <HardwareSerial.h>
 
-#define THROTTLE_PIN 15       // Throttle pin
+#define HWSERIAL Serial1  // serial port for debugging, bluetooth 
+
+#define THROTTLE_PIN 14       // Throttle pin
 #define THROTTLE_LOW 150      // These LOW and HIGH values are used to scale the ADC reading. More on this below
 #define THROTTLE_HIGH 710
 #define HALL_1_PIN 24
@@ -18,7 +21,7 @@
 
 #define HALL_OVERSAMPLE 4     // Hall oversampling count. More on this in the getHalls() function
 
-uint8_t hallToMotor[8] = {255, 1, 3, 2, 5, 0, 4, 255};
+uint8_t hallToMotor[8] = {255, 255, 255, 255, 255, 255, 255, 255};
 
 // Forward declarations
 void identifyHalls();
@@ -29,6 +32,8 @@ uint8_t readThrottle();
 
 void setup() {                // The setup function is called ONCE on boot-up
   Serial.begin(115200);
+  // HWSERIAL.begin(115200);
+  
 
   pinMode(LED_PIN, OUTPUT);
   digitalWriteFast(LED_PIN, HIGH);
@@ -40,7 +45,7 @@ void setup() {                // The setup function is called ONCE on boot-up
   pinMode(CH_PIN, OUTPUT);
   pinMode(CL_PIN, OUTPUT);
 
-  analogWriteFrequency(AH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
+  analogWriteFrequency(BH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
 
   pinMode(HALL_1_PIN, INPUT);         // Set the hall pins as input
   pinMode(HALL_2_PIN, INPUT);
@@ -48,7 +53,7 @@ void setup() {                // The setup function is called ONCE on boot-up
 
   pinMode(THROTTLE_PIN, INPUT);
   
-  // identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
+  identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
 }
 
 void loop() {                         // The loop function is called repeatedly, once setup() is done
@@ -60,6 +65,11 @@ void loop() {                         // The loop function is called repeatedly,
     uint8_t motorState = hallToMotor[hall]; // Convert from hall values (from 1 to 6) to motor state values (from 0 to 5) in the correct order. This line is magic
     writePWM(motorState, throttle);         // Actually command the transistors to switch into specified sequence and PWM value
   }
+
+  // digitalWrite(LED_PIN, LOW);
+  // delay(1000);
+  // digitalWrite(LED_PIN, HIGH);
+  // delay(1000);
 }
 
 /* Magic function to do hall auto-identification. Moves the motor to all 6 states, then reads the hall values from each one
@@ -76,6 +86,8 @@ void identifyHalls()
     uint8_t nextState = (i + 1) % 6;        // Calculate what the next state should be. This is for switching into half-states
     Serial.print("Going to ");
     Serial.println(i);
+    // HWSERIAL.print("Going to ");
+    // HWSERIAL.println(i);
     for(uint16_t j = 0; j < 200; j++)       // For a while, repeatedly switch between states
     {
       delay(1);
@@ -132,9 +144,9 @@ void writePhases(uint8_t ah, uint8_t bh, uint8_t ch, uint8_t al, uint8_t bl, uin
   analogWrite(AH_PIN, ah);
   analogWrite(BH_PIN, bh);
   analogWrite(CH_PIN, ch);
-  digitalWriteFast(AL_PIN, al);
-  digitalWriteFast(BL_PIN, bl);
-  digitalWriteFast(CL_PIN, cl);
+  analogWrite(AL_PIN, al);
+  analogWrite(BL_PIN, bl);
+  analogWrite(CL_PIN, cl);
 }
 
 /* Read hall sensors WITH oversamping. This is required, as the hall sensor readings are often noisy.
