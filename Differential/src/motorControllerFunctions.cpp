@@ -76,18 +76,22 @@ void setup() {                // The setup function is called ONCE on boot-up
 void loop() {                         // The loop function is called repeatedly, once setup() is done
   
   uint8_t throttle = readThrottle();  // readThrottle() is slow. So do the more important things 200 times more often
+  
   for(uint8_t i = 0; i < 200; i++)
   {  
     uint8_t hall = getHalls();              // Read from the hall sensors
 
     //ZANE ADDED-----------------
     updateVelocity(hall);
-    Serial7.write((uint16_t) wheelVelocity);
     //----------------------------
     
     uint8_t motorState = hallToMotor[hall]; // Convert from hall values (from 1 to 6) to motor state values (from 0 to 5) in the correct order. This line is magic
     writePWM(motorState, throttle);         // Actually command the transistors to switch into specified sequence and PWM value
   }
+  
+  //ZANE ADDED-----------------
+  Serial7.write((uint16_t) wheelVelocity);;
+  //----------------------------
 }
 
 //ZANE ADDED-----------------
