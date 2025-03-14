@@ -21,12 +21,26 @@
 
 uint8_t hallToMotor[8] = {255, 255, 255, 255, 255, 255, 255, 255};
 
+//ZANE ADDED CALCULATIONS
+/*
+25mph to Time Per Pulse
+25mph to inches / sec = 440 in / sec
+440in/sec linear velocity to Angular Velocity in /sec = 44 in/sec
+Time per rotation = 2pi/44 = 0.142799666 seconds
+Time per pulse =  0.142799666/30 = 4.76ms
+
+This means that for maximum accuracy, the time per calculating time 
+should be under 47.6 micro seconds for 100 checks per pulse
+
+Also, to standardize inches as the unit of measurement, 
+all measurements will be sent via inches 
+*/
 
 //ZANE ADDED-----------------
 #define wheelRadius 10 //inches
-const int dtTo
 
-void sendTime(int hall);
+void updateVelocity(int hall);
+int wheelVelocity= 0; // in inches/sec
 unsigned long t= 0;
 int lastHallState=255;
 //----------------------------
@@ -67,7 +81,8 @@ void loop() {                         // The loop function is called repeatedly,
     uint8_t hall = getHalls();              // Read from the hall sensors
 
     //ZANE ADDED-----------------
-    sendTime(hall);
+    updateVelocity(hall);
+    Serial7.write((uint16_t) wheelVelocity);
     //----------------------------
     
     uint8_t motorState = hallToMotor[hall]; // Convert from hall values (from 1 to 6) to motor state values (from 0 to 5) in the correct order. This line is magic
@@ -75,34 +90,23 @@ void loop() {                         // The loop function is called repeatedly,
   }
 }
 
-
-
-
 //ZANE ADDED-----------------
-void sendTime(int hall){
-    if (hall==lastHallState){
+void updateVelocity(int hall){
+    if (hall==lastHallState){ //if hall state is same as last one, we use same velocity as last update
         return;
     }
-    unsigned long current=millis();
-    unsigned long dt = current-t;
-    t=current;
+    unsigned long current=micros(); //gets current time
+    float dt = (current-t)/ 1e6; //gets change in time in seconds
+    t=current; //sets reference time to be current time
 
-    
-    //translate time between pulse to linear velocity
-
-}
+    //translate time between pulse to linear velocity (inputs dt, outputs in/sec)
+    //Velocity = (2pi/30) * (10 inches) * (1/dt)
+    if(dt<=0.0005)return; //if 10 times faster than fastest pulse at 25mph, likely error
+    //wheelVelocity=(int)(2.0*PI/30.0) * 10.0 * (1.0/dt);
+    wheelVelocity=(int) ((2.0*PI)/(3.0*dt));
+    return;
+} 
 //----------------------------
-
-
-
-
-
-
-
-
-
-
-
 
 /* Magic function to do hall auto-identification. Moves the motor to all 6 states, then reads the hall values from each one
  * 
