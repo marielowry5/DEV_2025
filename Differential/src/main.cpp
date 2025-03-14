@@ -106,6 +106,7 @@ void differential(float angle){
   if (voltageIn>900) voltageIn=1023; //ensures max is 1023 and allows max speed to hold
   if (voltageIn<100) voltageIn = 0;  //ensures min is 0 and allows off to hold
 
+  analogWriteResolution(10);
   analogWrite(throttleLeft,voltageIn+differential[0]*adjustSpeed);
   analogWrite(throttleRight,voltageIn+differential[1]*adjustSpeed);
 }
@@ -217,5 +218,6 @@ void loop() {
   float ccwAngle = 1.0 *estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
   float ccwAngle = 1.0 * ccwAngle; //TO DO: Input formula to convert steering wheel angle to actual angle
 
-  differential(ccwAngle);
+  if(Serial7.available() || Serial8.available()) differential(ccwAngle);
+  delay(1);
 }
