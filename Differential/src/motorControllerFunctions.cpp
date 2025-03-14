@@ -88,9 +88,10 @@ void loop() {                         // The loop function is called repeatedly,
     uint8_t motorState = hallToMotor[hall]; // Convert from hall values (from 1 to 6) to motor state values (from 0 to 5) in the correct order. This line is magic
     writePWM(motorState, throttle);         // Actually command the transistors to switch into specified sequence and PWM value
   }
-  
+
   //ZANE ADDED-----------------
-  Serial7.write((uint16_t) wheelVelocity);;
+  Serial7.write(lowByte(wheelVelocity));
+  Serial7.write(highByte(wheelVelocity));
   //----------------------------
 }
 
