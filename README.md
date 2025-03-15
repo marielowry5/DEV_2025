@@ -7,3 +7,6 @@ Electronic differential and current sensing/monitoring embedded in PDB
 
 To get VSCode setup, first install Platform IO.
 https://forum.pjrc.com/index.php?threads/tutorial-how-to-use-platformio-visual-code-studio-for-teensy.66674/ 
+
+Link to motor controller repo
+https://github.com/pgrady3/EasyController2
