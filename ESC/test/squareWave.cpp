@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-const int pwmPins[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25, 28, 29, 33, 36, 37};
+const int pwmPins[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25, 28, 29, 33, 36, 37};
 const int numPins = sizeof(pwmPins) / sizeof(pwmPins[0]); // size of array in bytes divided by size of one array element, gives array length
 const int pwmFrequency = 1000; // Set PWM frequency to 1 kHz
 const int dutyCycle = 128; // 50% duty cycle (0-255 for 8-bit resolution)

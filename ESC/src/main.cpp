@@ -10,18 +10,19 @@
 #define HALL_2_PIN 25       // hall B
 #define HALL_3_PIN 26       // hall C
 
-#define AH_PIN 22             // Pins from the Teensy to the gate drivers. AH = A high, etc
-#define AL_PIN 23
+// Pins from the Teensy to the gate drivers. AH = A high, etc
+#define AH_PIN 15             // on board, pin 16, need to switch bc of pwm error
+#define AL_PIN 17
 #define BH_PIN 18
 #define BL_PIN 19
-#define CH_PIN 20
+#define CH_PIN 22             // on board, pin 20, need to switch bc of pwm error
 #define CL_PIN 21
 
 #define LED_PIN 13            // The teensy has a built-in LED on pin 13
 
 #define HALL_OVERSAMPLE 4     // Hall oversampling count. More on this in the getHalls() function
 
-uint8_t hallToMotor[8] = {255, 1, 3, 2, 5, 0, 4, 255}; // PROBLEM: how to know phase order? 
+uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255}; // PROBLEM: how to know phase order? 
 
 
 //Zane edit
@@ -111,6 +112,8 @@ uint8_t readThrottle();
 
 void setup() {                // The setup function is called ONCE on boot-up
   Serial.begin(115200);
+  Serial.println("test");
+
 
   analogReadResolution(10);  // Set ADC to 10-bit mode (0-1023)
   // HWSERIAL.begin(115200);
@@ -137,7 +140,7 @@ void setup() {                // The setup function is called ONCE on boot-up
 
   pinMode(THROTTLE_PIN, INPUT);
   
-  identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
+  //identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
 }
 
 void loop() {                         // The loop function is called repeatedly, once setup() is done
