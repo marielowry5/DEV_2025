@@ -227,7 +227,7 @@ void loop() {
   //Serial.println(estimatedYawAngle); //print angle for debugging
 
   //TO DOOOO
-  float ccwAngle = 1.0 *estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
+  float ccwAngle = -1.0 *estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
   //TO DO: Input formula to convert steering wheel angle to actual angle
 
   if(Serial7.available()>=2 || Serial8.available()>=2) differential(ccwAngle);
