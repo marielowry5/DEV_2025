@@ -6,22 +6,23 @@
 #define THROTTLE_PIN 14       // Throttle pin
 #define THROTTLE_LOW 150      // These LOW and HIGH values are used to scale the ADC reading. More on this below
 #define THROTTLE_HIGH 710
-#define HALL_1_PIN 24
-#define HALL_2_PIN 25
-#define HALL_3_PIN 26
+#define HALL_1_PIN 24       // hall A
+#define HALL_2_PIN 25       // hall B
+#define HALL_3_PIN 26       // hall C
 
-#define AH_PIN 22             // Pins from the Teensy to the gate drivers. AH = A high, etc
-#define AL_PIN 23
+// Pins from the Teensy to the gate drivers. AH = A high, etc
+#define AH_PIN 15             // on board, pin 16, need to switch bc of pwm error
+#define AL_PIN 17
 #define BH_PIN 18
 #define BL_PIN 19
-#define CH_PIN 20
+#define CH_PIN 22             // on board, pin 20, need to switch bc of pwm error
 #define CL_PIN 21
 
 #define LED_PIN 13            // The teensy has a built-in LED on pin 13
 
 #define HALL_OVERSAMPLE 4     // Hall oversampling count. More on this in the getHalls() function
 
-uint8_t hallToMotor[8] = {255, 1, 3, 2, 5, 0, 4, 255}; // PROBLEM: how to know phase order? 
+uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255}; // PROBLEM: how to know phase order? 
 
 
 //Zane edit
@@ -49,15 +50,15 @@ be correct.
 
 
 hall equals:
-LSB - Hall1 Sensor
-2nd LSB - Hall2 Sensor
-3rd LSB - Hall3 Sensor
+LSB - HallA Sensor
+2nd LSB - HallB Sensor
+3rd LSB - HallC Sensor
 
-Lets say Hall1 starts with only hall1 on and it goes towards state hall2
+Lets say Halla starts with only halla on and it goes towards state hallb
 
 Indexes 0 and 7 empty
 
-State 0: 0 0 1 : Index 1
+State 0: 0 0 1 : Index 1    
 State 1: 0 1 1 : Index 3
 State 2: 0 1 0 : Index 2
 State 3: 1 1 0 : Index 6
@@ -80,6 +81,27 @@ uint8_t hallToMotor[8] = {255, 0, 4, 5, 2, 1, 3, 255};
 One of these should spin the motor forward, the other backward
 */
 
+/*
+Marie revision to motor state order 
+
+Motor state order based on writePWM function 
+Index 1: B high, A low 
+Index 2: C high, A low 
+Index 3: C high, B low
+Index 4: A high, B low
+Index 5: A high, C low
+Index 6: B high, C low
+
+State Index 1: B high, A low 
+Index 2: C high, A low 
+Index 3: C high, B low
+Index 4: A high, B low
+Index 5: A high, C low
+Index 6: B high, C low
+
+Need 
+*/
+
 
 // Forward declarations
 void identifyHalls();
@@ -90,6 +112,8 @@ uint8_t readThrottle();
 
 void setup() {                // The setup function is called ONCE on boot-up
   Serial.begin(115200);
+  Serial.println("test");
+
 
   analogReadResolution(10);  // Set ADC to 10-bit mode (0-1023)
   // HWSERIAL.begin(115200);
@@ -116,7 +140,7 @@ void setup() {                // The setup function is called ONCE on boot-up
 
   pinMode(THROTTLE_PIN, INPUT);
   
-  identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
+  //identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
 }
 
 void loop() {                         // The loop function is called repeatedly, once setup() is done
