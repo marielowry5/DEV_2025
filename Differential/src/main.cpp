@@ -105,8 +105,8 @@ void differential(float angle){
   
   int differential[2]={0,0};
 
-  if(goalLeftSpeed!=actualLeftSpeed)      differential[0]+=(goalLeftSpeed-actualLeftSpeed) / abs(goalLeftSpeed-actualLeftSpeed); //decrease ofset of left if too fast
-  if(goalRightSpeed!=actualRightSpeed)    differential[1]+=(goalRightSpeed-actualRightSpeed) / abs(goalRightSpeed-actualRightSpeed); //decrease ofset of right if too fast
+  if(goalLeftSpeed!=actualLeftSpeed)      differential[0]+=(actualLeftSpeed-goalLeftSpeed) / abs(goalLeftSpeed-actualLeftSpeed); //decrease ofset of left if too fast
+  if(goalRightSpeed!=actualRightSpeed)    differential[1]+=(actualRightSpeed-goalRightSpeed) / abs(goalRightSpeed-actualRightSpeed); //decrease ofset of right if too fast
   if(differential[0]>0)differential[0]=0;  //prevent speeding up the left wheel
   if(differential[1]>0)differential[1]=0;  //prevent speeding up the right wheel
 
