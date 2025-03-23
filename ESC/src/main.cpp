@@ -22,8 +22,8 @@
 
 #define HALL_OVERSAMPLE 4     // Hall oversampling count. More on this in the getHalls() function
 
-//uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255}; // PROBLEM: how to know phase order? 
-uint8_t hallToMotor[8] = {255, 0, 4, 5, 2, 1, 3, 255};
+uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255}; // PROBLEM: how to know phase order? 
+
 
 //Zane edit
 /*
@@ -176,12 +176,13 @@ void identifyHalls()
     // HWSERIAL.print("Going to ");
     // HWSERIAL.println(i);
     for(uint16_t j = 0; j < 200; j++)       // For a while, repeatedly switch between states
-    {
+    { // TODO: try higher value for this 
       delay(1);
       writePWM(i, 20);
       delay(1);
       writePWM(nextState, 20);
     }
+    // TODO: test this function when adding 1 instead of 2
     hallToMotor[getHalls()] = (i + 2) % 6;  // Store the hall state - motor state correlation. Notice that +2 indicates 90 degrees ahead, as we're at half states
   }
   
