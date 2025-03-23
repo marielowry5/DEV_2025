@@ -77,6 +77,7 @@ uint16_t readSpeedsUART();
 
 //-----------------------------------------------------------------
 //Differential
+/*
 void differential(float angle){
 
   int centerRadius=100000; //set default to a mile
@@ -105,8 +106,8 @@ void differential(float angle){
   
   int differential[2]={0,0};
 
-  if(goalLeftSpeed!=actualLeftSpeed)      differential[0]+=(goalLeftSpeed-actualLeftSpeed) / abs(goalLeftSpeed-actualLeftSpeed); //decrease ofset of left if too fast
-  if(goalRightSpeed!=actualRightSpeed)    differential[1]+=(goalRightSpeed-actualRightSpeed) / abs(goalRightSpeed-actualRightSpeed); //decrease ofset of right if too fast
+  if(goalLeftSpeed!=actualLeftSpeed)      differential[0]+=(actualLeftSpeed-goalLeftSpeed) / abs(goalLeftSpeed-actualLeftSpeed); //decrease ofset of left if too fast
+  if(goalRightSpeed!=actualRightSpeed)    differential[1]+=(actualRightSpeed-goalRightSpeed) / abs(goalRightSpeed-actualRightSpeed); //decrease ofset of right if too fast
   if(differential[0]>0)differential[0]=0;  //prevent speeding up the left wheel
   if(differential[1]>0)differential[1]=0;  //prevent speeding up the right wheel
 
@@ -120,7 +121,7 @@ void differential(float angle){
   analogWrite(throttleLeft,voltageIn+differential[0]*adjustSpeed);
   analogWrite(throttleRight,voltageIn+differential[1]*adjustSpeed);
 }
-
+*/
 //-----------------------------------------------------------------
 //Kalman Filter
 void kalmanFilter(float accelYaw, float gyroVelocity, float dt){
@@ -129,7 +130,7 @@ void kalmanFilter(float accelYaw, float gyroVelocity, float dt){
   ecm[0][0]+= (gyroNoise*dt)+(ecm[1][1]*dt*dt)-(ecm[0][1]*dt)-(ecm[1][0]*dt); //changes the uncertainty in the gyro estimate
   //adds a fixed rate based off of noise, adds a estimate based on a quadratic uncertainty in the bias, subtracts the strength of relationships between the angle error bias error
 
-  ecm[1][0]-=dt*ecm[1][1]; //changes the correlation between the angle and bias. Decrease correlation by the uncertainty in the bias.
+  ecm[1][0]-=dt*ecm[1][1]; //changes the c orrelation between the angle and bias. Decrease correlation by the uncertainty in the bias.
   ecm[0][1]=dt*ecm[1][1]; // keeps matrix symmetrcial
 
   ecm[1][1]+= gyroBias*dt; //adjusts the bias by how much bias can change integrated over time
@@ -172,20 +173,26 @@ int16_t readAccelYaw(){
 //-----------------------------------------------------------------
 //write to register of IMU
 void writeRegister(uint8_t address, uint8_t data){
-  digitalWrite(CS, LOW);  //tell IMU we are communicating with it
+  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3)); // 1 MHz
+  digitalWriteFast(CS, LOW);  //tell IMU we are communicating with it
+  delayNanoseconds(125);
   SPI.transfer(address);  //send the address we hope to send data to
   SPI.transfer(data);     //send data to register
-  digitalWrite(CS, HIGH); //stop communicating
+  digitalWriteFast(CS, HIGH); //stop communicating
+  delayNanoseconds(125);
 }
 
 
 //-----------------------------------------------------------------
 //read from register of IMU
 uint8_t readRegister(uint8_t address){
-  digitalWrite(CS,LOW);               //tell IMU we are communicating with it
+  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3)); // 1 MHz
+  digitalWriteFast(CS,LOW);               //tell IMU we are communicating with it
+  delayNanoseconds(125);
   SPI.transfer(address | 0x80);       //send the address we hope to read from. The 0x80 sets the most significant digit to one to ensure read operation.
   uint8_t data = SPI.transfer(0x00);  //sends a filler bit to fill space while getting data
-  digitalWrite(CS, HIGH);             //stop communicating
+  digitalWriteFast(CS, HIGH);             //stop communicating
+  delayNanoseconds(125);
   return data;                        //return value
 }
 
@@ -194,16 +201,20 @@ uint8_t readRegister(uint8_t address){
 void setup() {
 
   Serial.begin(115200);   //initialize serial communication
-  SPI.begin();            //initialize SPI interface
+  SPI.begin();            //initialize SPI interfac e
 
-  Serial7.begin(115200);     //initialize leftMotorRead
-  Serial8.begin(115200);     //initialize rightMotorRead
+  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3)); // 1 MHz
+
+  //Serial7.begin(115200);     //initialize leftMotorRead
+  //Serial8.begin(115200);     //initialize rightMotorRead
 
   pinMode(CS, OUTPUT);    //Set Chip Select to Output
-  digitalWrite(CS, HIGH); //turn off SPI communication by default
-
+  digitalWriteFast(CS, LOW); //turn off SPI communication by default
+  delayNanoseconds(125);
   writeRegister(PWR_MGMT_1, 0x00); //Wake Up IMU
   writeRegister(GYRO_CONFIG, 0x00); //sets GYRO to ±250°/s
+  digitalWriteFast(CS, HIGH); //turn off SPI communication by default
+  delayNanoseconds(125);
   //writeRegister(ACCEL_CONFIG, 0x00); //sets ACCEL to 2g
 
   lastGyroTime=millis(); //initialize time since last update at t=0
@@ -216,6 +227,7 @@ void loop() {
   //---------------------Gets Angle of Steering Wheel------------------------------//
   int16_t gyroRaw = readGyroVelocity(); //get binary gyro value
   float gyroDPS = gyroRaw / gyroSensitivity;  //convert to degrees per second
+  //Serial.println(gyroDPS);
 
   int16_t accelYaw = readAccelYaw(); //get accerometer degrees
 
@@ -224,12 +236,12 @@ void loop() {
   lastGyroTime=t;
 
   kalmanFilter(accelYaw, gyroDPS,dt); //run kalman fiter
-  //Serial.println(estimatedYawAngle); //print angle for debugging
+  Serial.println(estimatedYawAngle); //print angle for debugging
 
   //TO DOOOO
   float ccwAngle = -1.0 *estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
   //TO DO: Input formula to convert steering wheel angle to actual angle
 
-  if(Serial7.available()>=2 || Serial8.available()>=2) differential(ccwAngle);
+  //if(Serial7.available()>=2 || Serial8.available()>=2) differential(ccwAngle);
   delay(1);
 }
