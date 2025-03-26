@@ -64,6 +64,8 @@ float gyroNoise= 0.1*0.1; //Noise of 0.1(º/s-rms) (Sheet 3.1) (standard deviati
 float gyroBias= 0.003; //Cooresponds to how fast the bias is expected to change. A low value means bias is slower to respond to changes in bias. A higher value is used of the bias is expected to be slow changing. 0.003 is a low value.
 float accelNoise = 0.03; //Noise of 8 (mg-rms) (Sheet 3.2) (standard deviation). Squaring gets variance
 
+int differential[2]={0,0};
+
 
 //-----------------------------------------------------------------
 //Function Declarations
@@ -72,15 +74,14 @@ uint8_t readRegister(uint8_t address);
 int16_t readAccelYaw();
 int16_t readGyroVelocity();
 void kalmanFilter(float accelYaw, float gyroVelocity, float dt);
-void differential(float angle);
+void differentialFunction(float angle);
 uint16_t readSpeedsUART();
 
 //-----------------------------------------------------------------
 //Differential
 
 
-void differential(float angle){
-
+void differentialFunction(float angle){
   int centerRadius=100000; //set default to a mile
   if(abs(angle)>2){        //a little tolerance for steering wheel angle
     centerRadius = (int) wheelBase/(tan(angle * (PI / 180.0))); //the turning radius of the center of the car
@@ -104,8 +105,6 @@ void differential(float angle){
   int actualCenterSpeed=(actualLeftSpeed+actualRightSpeed)/2; //get the center of car speed
   int goalLeftSpeed = actualCenterSpeed * (leftRadius/ (float) centerRadius);
   int goalRightSpeed = actualCenterSpeed * (rightRadius/ (float) centerRadius);
-  
-  int differential[2]={0,0};
 
   if(goalLeftSpeed!=actualLeftSpeed)      differential[0]+=(goalLeftSpeed-actualLeftSpeed) / abs(goalLeftSpeed-actualLeftSpeed); //decrease ofset of left if too fast
   if(goalRightSpeed!=actualRightSpeed)    differential[1]+=(goalRightSpeed-actualRightSpeed) / abs(goalRightSpeed-actualRightSpeed); //decrease ofset of right if too fast
@@ -252,6 +251,6 @@ void loop() {
   //int voltageIn = analogRead(throttleIn);
   //Serial.println(voltageIn);
 
-  if(Serial.available()>=1) differential(ccwAngle);
+  if(Serial.available()>=1) differentialFunction(ccwAngle);
   delay(1);
 }
