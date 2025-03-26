@@ -3,7 +3,7 @@
 
 // #define HWSERIAL Serial1  // serial port for debugging, bluetooth 
 
-#define THROTTLE_PIN 14       // Throttle pin
+#define THROTTLE_PIN 38       // Throttle pin
 #define THROTTLE_LOW 150      // These LOW and HIGH values are used to scale the ADC reading. More on this below
 #define THROTTLE_HIGH 710
 #define HALL_1_PIN 24       // hall A
@@ -11,85 +11,33 @@
 #define HALL_3_PIN 26       // hall C
 
 // Pins from the Teensy to the gate drivers. AH = A high, etc
-#define AH_PIN 15             // on board, pin 16, need to switch bc of pwm error
-#define AL_PIN 17
+#define AH_PIN 14             // on board, pin 16, need to switch bc of pwm error
+#define AL_PIN 15
 #define BH_PIN 18
 #define BL_PIN 19
 #define CH_PIN 22             // on board, pin 20, need to switch bc of pwm error
-#define CL_PIN 21
+#define CL_PIN 23
 
 #define LED_PIN 13            // The teensy has a built-in LED on pin 13
 
 #define HALL_OVERSAMPLE 4     // Hall oversampling count. More on this in the getHalls() function
 
-uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255}; // PROBLEM: how to know phase order? 
+//uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255}; // PROBLEM: how to know phase order? 
 
-// uint8_t hallToMotor[8] = {255, 1, 3, 2, 5, 0, 4, 255};
+uint8_t hallToMotor[8] = {255, 4, 0, 5, 2, 3, 1, 255}; // old motor state order from 24V motor 
 
-/*
+//ZANE ADDED-----------------
+#define wheelRadius 10 //inches
 
-010
-100
-
-
-*/
-
-
-//Zane edit
-/*
-From looking at the code, if I am understanding it correctly, since our sensors are 
-always going the same direction and the positions don't change, I think we want to
-comment out the 
-
-"identifyHalls();"
-
-at the end of setup. This is because it:
-
-1. Introduces a 120 degree prediction of where it will be 2 states from now
- - that is great for high speeds, 
- - but for slow speeds it will mean the motor is always doing the wrong thing
-
-2. We have a set hall effect orientation. Once we deterrmine the right hallToMotor
- - the wheels always turn the same way, meaning our order sould be constant
-
-Instead, we want to out hallToMotor for our purposes. 
-Below, I wrote two hallToMotor[] declarations. I'm not super confident that it will work, 
-but if I am understanding the idea correctly one of the two hallToMotor arrays should
-be correct. 
+void updateVelocity(int hall);
+int wheelVelocity= 0; // in inches/sec
+unsigned long t= 0;
+int lastHallState=255;
+#define speedOut 29
+//----------------------------
 
 
 
-hall equals:
-LSB - HallA Sensor
-2nd LSB - HallB Sensor
-3rd LSB - HallC Sensor
-
-Lets say Halla starts with only halla on and it goes towards state hallb
-
-Indexes 0 and 7 empty
-
-State 0: 0 0 1 : Index 1    
-State 1: 0 1 1 : Index 3
-State 2: 0 1 0 : Index 2
-State 3: 1 1 0 : Index 6
-State 4: 1 0 0 : Index 4
-State 5: 1 0 1 : Index 5
-
-uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255};
-
-Could also go backwards/ towards hall 3
-
-State 0: 0 0 1 : Index 1
-State 1: 1 0 1 : Index 5
-State 2: 1 0 0 : Index 4
-State 3: 1 1 0 : Index 6
-State 4: 0 1 0 : Index 2
-State 5: 0 1 1 : Index 3
-
-uint8_t hallToMotor[8] = {255, 0, 4, 5, 2, 1, 3, 255};
-
-One of these should spin the motor forward, the other backward
-*/
 
 /*
 Marie revision to motor state order 
@@ -124,6 +72,10 @@ void setup() {                // The setup function is called ONCE on boot-up
   Serial.begin(115200);
   Serial.println("test");
 
+  //ZANE ADDED-----------------
+  Serial7.begin(115200);
+  //----------------------------
+
 
   analogReadResolution(10);  // Set ADC to 10-bit mode (0-1023)
   // HWSERIAL.begin(115200);
@@ -150,7 +102,7 @@ void setup() {                // The setup function is called ONCE on boot-up
 
   pinMode(THROTTLE_PIN, INPUT);
   
-  //identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
+//  identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
 }
 
 void loop() {                         // The loop function is called repeatedly, once setup() is done
@@ -159,15 +111,50 @@ void loop() {                         // The loop function is called repeatedly,
   for(uint8_t i = 0; i < 200; i++)
   {  
     uint8_t hall = getHalls();              // Read from the hall sensors
+    //Serial.println((int) hall);
+    
     uint8_t motorState = hallToMotor[hall]; // Convert from hall values (from 1 to 6) to motor state values (from 0 to 5) in the correct order. This line is magic
-    writePWM(motorState, 100);         // Actually command the transistors to switch into specified sequence and PWM value
+
+    //ZANE ADDED-----------------
+    updateVelocity(motorState);
+    //----------------------------
+    
+    //Serial.println((int) motorState);
+    writePWM(motorState, 200);         // Actually command the transistors to switch into specified sequence and PWM value
   }
 
+  //ZANE ADDED-----------------
+  //Serial7.write(lowByte(wheelVelocity));
+  //Serial7.write(highByte(wheelVelocity));
+  Serial.println(wheelVelocity);
+  analogWrite(speedOut, (int) ((float)wheelVelocity/(2.0)));
+  //----------------------------
+  
   // digitalWrite(LED_PIN, LOW);
   // delay(1000);
   // digitalWrite(LED_PIN, HIGH);
   // delay(1000);
 }
+
+//ZANE ADDED-----------------
+void updateVelocity(int state){
+    if (state==lastHallState){ //if hall state is same as last one, we use same velocity as last update
+        //Serial.println("s");
+        return;
+    }
+    lastHallState=state;
+    unsigned long current=micros(); //gets current time
+    float dt = (current-t)/ 1e6; //gets change in time in seconds
+    t=current; //sets reference time to be current time
+
+    //translate time between pulse to linear velocity (inputs dt, outputs in/sec)
+    //Velocity = (2pi/30) * (10 inches) * (1/dt)
+    //wheelVelocity=(int)(2.0*PI/30.0) * 10.0 * (1.0/dt);
+    //wheelVelocity=(int) ((2.0*PI)/(3.0*dt));
+    wheelVelocity = (int)((10.0 / 30.0) * (1.0 / dt));   
+    return;
+} 
+//----------------------------
 
 /* Magic function to do hall auto-identification. Moves the motor to all 6 states, then reads the hall values from each one
  * 
