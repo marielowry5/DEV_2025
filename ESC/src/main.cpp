@@ -95,7 +95,6 @@ void setup() {                // The setup function is called ONCE on boot-up
   analogWriteFrequency(BH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
   analogWriteFrequency(CH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
 
-
   pinMode(HALL_1_PIN, INPUT);         // Set the hall pins as input
   pinMode(HALL_2_PIN, INPUT);
   pinMode(HALL_3_PIN, INPUT);
@@ -201,10 +200,12 @@ void identifyHalls()
 
 void writePWM(uint8_t motorState, uint8_t dutyCycle)
 {
+  Serial.println(motorState);
   if(dutyCycle == 0)                          // If zero throttle, turn all off
     motorState = 255;
-
+  /*
   if(motorState == 0)                         // LOW A, HIGH B
+      //a high, b high, c high, a low, b low, c low
       writePhases(0, dutyCycle, 0, 1, 0, 0);
   else if(motorState == 1)                    // LOW A, HIGH C
       writePhases(0, 0, dutyCycle, 1, 0, 0);
@@ -218,7 +219,11 @@ void writePWM(uint8_t motorState, uint8_t dutyCycle)
       writePhases(0, dutyCycle, 0, 0, 0, 1);
   else                                        // All off
       writePhases(0, 0, 0, 0, 0, 0);
+
+  */ 
+ writePhases(0, dutyCycle, 0, 0, 0, 1);
 }
+      
 
 /* Helper function to actually write values to transistors. For the low sides, takes a 0 or 1 for on/off
  * For high sides, takes 0-255 for PWM value
@@ -260,7 +265,6 @@ uint8_t getHalls()
     hall |= (1<<1);                             // Store a 1 in the 1st bit
   if (hallCounts[2] >= HALL_OVERSAMPLE / 2)
     hall |= (1<<2);                             // Store a 1 in the 2nd bit
-
   return hall & 0x7;                            // Just to make sure we didn't do anything stupid, set the maximum output value to 7
 }
 
