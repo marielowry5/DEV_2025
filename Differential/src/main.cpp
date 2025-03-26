@@ -27,7 +27,7 @@
 #define MISO 12 //IMU to Board
 #define SCK 13  //SPI Clock
 
-#define throttleIn A17 //throttle in from pedal (41) (0-2.5V)
+#define throttleIn A0 //throttle in from pedal (41) (0-5)
 #define RXR 28 //Read Velocity from Right Wheel in uint16 in inches/sec (Serial 7)
 #define RXL 34 //Read Velocity from Right Wheel in uint16 in inches/sec (Serial 8)
 #define throttleRight 29 //AnalogVoltage out to Right Motor
@@ -48,8 +48,8 @@ const float gyroSensitivity = 131;    //Gyrosensitivy scale factor (LSB/(º/s)) 
 const float accelSensitivity = 16384.0;   //Acceleromter Sensitity Factor (LSB/g) (Register Map 3.2) | Means that for every g multiple of gravity, the least significant bit changes by 16384
 
 //Speed Variables
-uint16_t actualRightSpeed=0;
-uint16_t actualLeftSpeed=0;
+int actualRightSpeed=0;
+int actualLeftSpeed=0;
 
 //Kalman Fiilter Variables
 float estimatedYawAngle = 0;    //estimated Yaw Angle after filtering
@@ -77,7 +77,8 @@ uint16_t readSpeedsUART();
 
 //-----------------------------------------------------------------
 //Differential
-/*
+
+
 void differential(float angle){
 
   int centerRadius=100000; //set default to a mile
@@ -88,16 +89,16 @@ void differential(float angle){
   int leftRadius = centerRadius - trackWidth/2; //turning radius of back left wheel
   int rightRadius = centerRadius + trackWidth/2; //turning radius of back right wheel
 
-  while(Serial8.available()>=2){ //get most recent left wheel speed
-    uint8_t lowByte = Serial8.read();
-    uint8_t highByte= Serial8.read();
-    actualLeftSpeed=(highByte<<8) | lowByte;
-  }
-
-  while(Serial7.available()>=2){ //get most recent right wheel speed
-    uint8_t lowByte= Serial7.read();
-    uint8_t highByte= Serial7.read();
-    actualRightSpeed=(highByte<<8) | lowByte;
+  while(Serial.available()>0){
+    int recieved= Serial.parseInt();
+    if ((int) recieved <= (int)1000){
+      actualLeftSpeed= recieved+0;
+    } else{
+      actualRightSpeed=recieved-1000;
+    }
+    while(Serial.available()>0){
+      Serial.read();
+    }
   }
 
   int actualCenterSpeed=(actualLeftSpeed+actualRightSpeed)/2; //get the center of car speed
@@ -106,22 +107,39 @@ void differential(float angle){
   
   int differential[2]={0,0};
 
-  if(goalLeftSpeed!=actualLeftSpeed)      differential[0]+=(actualLeftSpeed-goalLeftSpeed) / abs(goalLeftSpeed-actualLeftSpeed); //decrease ofset of left if too fast
-  if(goalRightSpeed!=actualRightSpeed)    differential[1]+=(actualRightSpeed-goalRightSpeed) / abs(goalRightSpeed-actualRightSpeed); //decrease ofset of right if too fast
+  if(goalLeftSpeed!=actualLeftSpeed)      differential[0]+=(goalLeftSpeed-actualLeftSpeed) / abs(goalLeftSpeed-actualLeftSpeed); //decrease ofset of left if too fast
+  if(goalRightSpeed!=actualRightSpeed)    differential[1]+=(goalRightSpeed-actualRightSpeed) / abs(goalRightSpeed-actualRightSpeed); //decrease ofset of right if too fast
   if(differential[0]>0)differential[0]=0;  //prevent speeding up the left wheel
   if(differential[1]>0)differential[1]=0;  //prevent speeding up the right wheel
 
-  analogReadAveraging(16); //averages the throttle value to allow for smoother measurements
-  analogReadResolution(10);
-  int voltageIn = (int) (analogRead(throttleIn)*1.32); //Reads throttle in from 0-2.5V and converts to 1-1023
+  int voltageIn = (int) (analogRead(throttleIn)); //Reads throttle in from 0-2.5V and converts to 1-1023
+  //Serial.println(voltageIn);
   if (voltageIn>900) voltageIn=1023; //ensures max is 1023 and allows max speed to hold
   if (voltageIn<100) voltageIn = 0;  //ensures min is 0 and allows off to hold
 
-  analogWriteResolution(10);
   analogWrite(throttleLeft,voltageIn+differential[0]*adjustSpeed);
   analogWrite(throttleRight,voltageIn+differential[1]*adjustSpeed);
+
+  Serial.print("Left Speed: ");
+  Serial.print(actualLeftSpeed);
+  Serial.print(" Right Speed: ");
+  Serial.print(actualRightSpeed);  
+  Serial.print(" | Center Speed: ");
+  Serial.print(actualCenterSpeed);
+  Serial.print(" | Angle: ");
+  Serial.print(angle);
+  Serial.print(" | Turn Radius: ");
+  Serial.print(centerRadius);
+  Serial.print(" | Goal Left Speed: ");
+  Serial.print(goalLeftSpeed);
+  Serial.print(" | Goal Right Speed: ");
+  Serial.print(goalRightSpeed);
+  Serial.print(" | Left Differential: ");
+  Serial.print(differential[0]);
+  Serial.print(" | Right Differential: ");
+  Serial.println(differential[1]);
 }
-*/
+
 //-----------------------------------------------------------------
 //Kalman Filter
 void kalmanFilter(float accelYaw, float gyroVelocity, float dt){
@@ -130,7 +148,7 @@ void kalmanFilter(float accelYaw, float gyroVelocity, float dt){
   ecm[0][0]+= (gyroNoise*dt)+(ecm[1][1]*dt*dt)-(ecm[0][1]*dt)-(ecm[1][0]*dt); //changes the uncertainty in the gyro estimate
   //adds a fixed rate based off of noise, adds a estimate based on a quadratic uncertainty in the bias, subtracts the strength of relationships between the angle error bias error
 
-  ecm[1][0]-=dt*ecm[1][1]; //changes the c orrelation between the angle and bias. Decrease correlation by the uncertainty in the bias.
+  ecm[1][0]-=dt*ecm[1][1]; //changes the correlation between the angle and bias. Decrease correlation by the uncertainty in the bias.
   ecm[0][1]=dt*ecm[1][1]; // keeps matrix symmetrcial
 
   ecm[1][1]+= gyroBias*dt; //adjusts the bias by how much bias can change integrated over time
@@ -173,26 +191,20 @@ int16_t readAccelYaw(){
 //-----------------------------------------------------------------
 //write to register of IMU
 void writeRegister(uint8_t address, uint8_t data){
-  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3)); // 1 MHz
-  digitalWriteFast(CS, LOW);  //tell IMU we are communicating with it
-  delayNanoseconds(125);
+  digitalWrite(CS, LOW);  //tell IMU we are communicating with it
   SPI.transfer(address);  //send the address we hope to send data to
   SPI.transfer(data);     //send data to register
-  digitalWriteFast(CS, HIGH); //stop communicating
-  delayNanoseconds(125);
+  digitalWrite(CS, HIGH); //stop communicating
 }
 
 
 //-----------------------------------------------------------------
 //read from register of IMU
 uint8_t readRegister(uint8_t address){
-  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3)); // 1 MHz
-  digitalWriteFast(CS,LOW);               //tell IMU we are communicating with it
-  delayNanoseconds(125);
+  digitalWrite(CS,LOW);               //tell IMU we are communicating with it
   SPI.transfer(address | 0x80);       //send the address we hope to read from. The 0x80 sets the most significant digit to one to ensure read operation.
   uint8_t data = SPI.transfer(0x00);  //sends a filler bit to fill space while getting data
-  digitalWriteFast(CS, HIGH);             //stop communicating
-  delayNanoseconds(125);
+  digitalWrite(CS, HIGH);             //stop communicating
   return data;                        //return value
 }
 
@@ -201,20 +213,16 @@ uint8_t readRegister(uint8_t address){
 void setup() {
 
   Serial.begin(115200);   //initialize serial communication
-  SPI.begin();            //initialize SPI interfac e
-
-  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE3)); // 1 MHz
+  SPI.begin();            //initialize SPI interface
 
   //Serial7.begin(115200);     //initialize leftMotorRead
-  //Serial8.begin(115200);     //initialize rightMotorRead
+  //erial8.begin(115200);     //initialize rightMotorRead
 
   pinMode(CS, OUTPUT);    //Set Chip Select to Output
-  digitalWriteFast(CS, LOW); //turn off SPI communication by default
-  delayNanoseconds(125);
+  digitalWrite(CS, HIGH); //turn off SPI communication by default
+
   writeRegister(PWR_MGMT_1, 0x00); //Wake Up IMU
   writeRegister(GYRO_CONFIG, 0x00); //sets GYRO to ±250°/s
-  digitalWriteFast(CS, HIGH); //turn off SPI communication by default
-  delayNanoseconds(125);
   //writeRegister(ACCEL_CONFIG, 0x00); //sets ACCEL to 2g
 
   lastGyroTime=millis(); //initialize time since last update at t=0
@@ -227,21 +235,23 @@ void loop() {
   //---------------------Gets Angle of Steering Wheel------------------------------//
   int16_t gyroRaw = readGyroVelocity(); //get binary gyro value
   float gyroDPS = gyroRaw / gyroSensitivity;  //convert to degrees per second
-  //Serial.println(gyroDPS);
 
-  int16_t accelYaw = readAccelYaw(); //get accerometer degrees
+  int16_t accelYaw = readAccelYaw(); //get accerometer degreeth
 
   unsigned long t=millis(); //get time
   float dt=(t-lastGyroTime)/1000.0; //get change in time in seconds
   lastGyroTime=t;
 
   kalmanFilter(accelYaw, gyroDPS,dt); //run kalman fiter
-  Serial.println(estimatedYawAngle); //print angle for debugging
+  //Serial.println(estimatedYawAngle); //print angle for debugging
 
   //TO DOOOO
   float ccwAngle = -1.0 *estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
   //TO DO: Input formula to convert steering wheel angle to actual angle
 
-  //if(Serial7.available()>=2 || Serial8.available()>=2) differential(ccwAngle);
+  //int voltageIn = analogRead(throttleIn);
+  //Serial.println(voltageIn);
+
+  if(Serial.available()>=1) differential(ccwAngle);
   delay(1);
 }
