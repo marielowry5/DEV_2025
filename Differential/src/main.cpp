@@ -116,9 +116,21 @@ void differentialFunction(float angle){
   if (voltageIn>900) voltageIn=1023; //ensures max is 1023 and allows max speed to hold
   if (voltageIn<100) voltageIn = 0;  //ensures min is 0 and allows off to hold
 
-  analogWrite(throttleLeft,voltageIn+differential[0]*adjustSpeed);
-  analogWrite(throttleRight,voltageIn+differential[1]*adjustSpeed);
+  
+  //SCALING THE THROTTLE
+  int throttleLeftValue = voltageIn+differential[0]*adjustSpeed;
+  int thorttleRightValue = voltageIn+differential[1]*adjustSpeed;
 
+  int scaledThrottleLeft = (throttleLeftValue/1023)*255;
+  int scaledThrottleRight = (throttleRightValue/1023)*255;
+
+  if (scaledThorttleLeft < 0) scaledThrottleLeft=10;
+  if (scaledThrottleRight < 0)  scaledThrottleRight=10;
+  
+  analogWrite(throttleLeft, scaledThrottleLeft);
+  analogWrite(throttleRight, scaledThrottleRight);
+
+  
   Serial.print("Left Speed: ");
   Serial.print(actualLeftSpeed);
   Serial.print(" Right Speed: ");
