@@ -47,30 +47,30 @@ void setup() {
 
 void loop() {
   if(analogRead(sRunning) == 0){ //running lights switch
-    Serial.println("running lights on");
+    Serial.print("RunLights: On | ");
     digitalWrite(runningBL, HIGH); //running brake left
     digitalWrite(runningBR, HIGH); //running brake right
   }
 
   else{ //if switch is off turn running lights off
-    Serial.println("running lights off");
+    Serial.print("RunLights: Off | ");
     digitalWrite(runningBL, LOW);
     digitalWrite(runningBR, LOW);
   }
 
   if(analogRead(sHL) == 0){ //headlights switch
-    Serial.println("headlights on");
+    Serial.print("HeadLights: On | ");
     digitalWrite(FL, HIGH); //front left headlight
     digitalWrite(FR, HIGH); //front right headlight
   }
   else{ //if switch is off turn headlights off
-    Serial.println("headlights off");
+    Serial.print("HeadLights: Off | ");
     digitalWrite(FL, LOW);
     digitalWrite(FR, LOW);
   }
 
   if(digitalRead(sHazard) == LOW){ //all hazards switch
-    Serial.println("hazard on");
+    Serial.print("Hazards: On | ");
     if(leftPriority == 0 && rightPriority == 0){ //if left and right switches aren't on
       hazardPriority = 1;
       digitalWrite(FLH, HIGH); //front left hazard
@@ -86,7 +86,7 @@ void loop() {
     }
   }
   else{ //if switch is off turn all hazards off
-    Serial.println("hazard off");
+    Serial.print("Hazards: Off | ");
     hazardPriority = 0;
     digitalWrite(FLH, LOW);
     digitalWrite(FRH, LOW);
@@ -95,7 +95,7 @@ void loop() {
   }
 
   if(digitalRead(sTurnRight) == LOW){ //right turn switch
-    Serial.println("right turn on");
+    Serial.print("RightTurn: On | ");
     if(leftPriority == 0 && hazardPriority == 0){ //if left turn and hazard switches are off
       rightPriority = 1;
       digitalWrite(FRH, HIGH); //front right hazard
@@ -107,14 +107,14 @@ void loop() {
     }
   }
   else{ //if right turn switch is off, turn off right turn lights
-    Serial.println("right turn off");
+    Serial.print("RightTurn: Off | ");
     rightPriority = 0;
     digitalWrite(FRH, LOW);
     digitalWrite(BRH, LOW);
   }
 
   if(digitalRead(sTurnLeft) == LOW){ //left turn switch
-    Serial.println("left turn on");
+    Serial.print("LeftTurn: On | ");
     if(rightPriority == 0 && hazardPriority == 0){ //if right turn and hazard switches are off
       leftPriority = 1;
       digitalWrite(FLH, HIGH); //front left hazard
@@ -126,38 +126,38 @@ void loop() {
     }
   }
   else{ //if left turn switch is off, turn off left turn lights
-    Serial.println("left turn off");
+    Serial.print("LeftTurn: Off | ");
     leftPriority = 0;
     digitalWrite(FLH, LOW);
     digitalWrite(BLH, LOW);
   }
 
   if(digitalRead(sFan) == LOW){ //fan switch
-    Serial.println("fan on");
+    Serial.println("Fan: On | ");
     digitalWrite(fan, HIGH); //fan on
   }
   else{ //if fan switch is off, turn fan off
-    Serial.println("fan off");
+    Serial.print("Fan: Off | ");
     digitalWrite(fan, LOW);
   }
 
   if(digitalRead(sBrake) == LOW){ //brakes switch (from pedal sensor)
-    Serial.println("brake on");
+    Serial.print("Brake: On | ");
     digitalWrite(BL, HIGH); //left brake light
     digitalWrite(BR, HIGH); //right brake light
   }
   else{ //if brakes aren't pushed, turn brake lights off
-    Serial.println("brake off");
+    Serial.print("Brake: Off | ");
     digitalWrite(BL, LOW);
     digitalWrite(BR, LOW);
   }
 
   if(analogRead(sHorn) == 0){ //horn switch
-    Serial.println("horn on");
+    Serial.println("Horn: On | ");
     digitalWrite(horn, HIGH); //horn on
   }
   else{ //if horn switch is off, turn horn off
-    Serial.println("horn off");
+    Serial.println("Horn: Off | ");
     digitalWrite(horn, LOW);
   }
   delay(1000);
