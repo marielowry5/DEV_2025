@@ -119,12 +119,12 @@ void differentialFunction(float angle){
   
   //SCALING THE THROTTLE
   int throttleLeftValue = voltageIn+differential[0]*adjustSpeed;
-  int thorttleRightValue = voltageIn+differential[1]*adjustSpeed;
+  int throttleRightValue = voltageIn+differential[1]*adjustSpeed;
 
   int scaledThrottleLeft = (throttleLeftValue/1023)*255;
   int scaledThrottleRight = (throttleRightValue/1023)*255;
 
-  if (scaledThorttleLeft < 0) scaledThrottleLeft=10;
+  if (scaledThrottleRight < 0) scaledThrottleLeft=10;
   if (scaledThrottleRight < 0)  scaledThrottleRight=10;
   
   analogWrite(throttleLeft, scaledThrottleLeft);
