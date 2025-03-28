@@ -1,31 +1,34 @@
-#include <Arduino.h>
+#include <Arduino.h> //import Arduino library
 
-#define FL 0
-#define FR 1
-#define FLH 2
-#define FRH 3
-#define BLH 4
-#define BRH 5
-#define fan 6
-#define horn 7
-#define BR 8
-#define runningBR 9
-#define BL 10
-#define runningBL 11
+//Defining Light, Fan & Horn variables
+#define FL 0  // Front Left Headlight
+#define FR 1  //Front Right Headlight
+#define FLH 2 //Front Left Hazard
+#define FRH 3 //Front Right Hazard
+#define BLH 4 //Back Left Hazard
+#define BRH 5 //Back Left Hazard
+#define fan 6 //Fan
+#define horn 7  //Horn
+#define BR 8  //Right Braking Light
+#define runningBR 9 // Right Running Back light
+#define BL 10 // Left Brake Light
+#define runningBL 11  // Left Running Back Light
 
-#define sBrake A0
-#define sFan A1
-#define sTurnLeft A2
-#define sTurnRight A3
-#define sHazard A4
-#define sHL A5
-#define sRunning A6
-#define sHorn A7
-int leftPriority = 0;
-int rightPriority = 0;
-int hazardPriority = 0;
+//Defining Switches
+#define sBrake A0 //Brake Switch
+#define sFan A1 //Fan Switch
+#define sTurnLeft A2  //Left Turn Switch
+#define sTurnRight A3 //Right Turn Switch
+#define sHazard A4  //Hazard Switch
+#define sHL A5  //Headlight Switch
+#define sRunning A6 //Running Switch
+#define sHorn A7  //Horn Switch
+int leftPriority = 0; //initial left turn signal switch value (0 means switch is not turned on and 1 means switch is turned on)
+int rightPriority = 0;  //initial right turn signal switch value (0 means switch is not turned on and 1 means switch is turned on)
+int hazardPriority = 0; //initial hazard signal switch value (0 means switch is not turned on and 1 means switch is turned on)
 
 void setup() {
+  // setting all the lights, fan, and horn to be output mode
   pinMode(FL, OUTPUT);
   pinMode(FR, OUTPUT);
   pinMode(FLH, OUTPUT);
@@ -37,6 +40,7 @@ void setup() {
   pinMode(fan, OUTPUT);
   pinMode(horn, OUTPUT);
 
+  // setting signaling, fan, and brake switches to input pullup
   pinMode(sHazard, INPUT_PULLUP);
   pinMode(sTurnRight, INPUT_PULLUP);
   pinMode(sTurnLeft, INPUT_PULLUP);
