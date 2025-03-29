@@ -70,7 +70,7 @@ void loop() {
   unsigned long currentTime=millis();
   updateStates(currentTime);
 
-  if(currentTime>(3+dutySwitchTime)){ //if 5 ms passed, switch duty on to off
+  if(currentTime>(1+dutySwitchTime)){ //if 5 ms passed, switch duty on to off
     dutyOn= !dutyOn; 
     dutySwitchTime=currentTime;
   }
@@ -161,9 +161,11 @@ void driveTransistors(unsigned long currentTime){
   digitalWrite(FL,headlights); //turn on headlights
 
   if(currentTime<(hornTime+500)){ //horn for 1/2 second
-    digitalWrite(horn, 1);
+    digitalWrite(horn, HIGH);
+    Serial.println("Horn On");
   }else{
-    digitalWrite(horn, 0);
+    digitalWrite(horn, LOW);
+    Serial.println("Horn Off");
   }
 
   digitalWrite(FLH, blinkOn & (hazards || leftTurn)); //turn on front left blinker
