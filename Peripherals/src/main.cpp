@@ -25,11 +25,11 @@ int leftPriority = 0; //initial left turn signal switch value (0 means switch is
 int rightPriority = 0;  //initial right turn signal switch value (0 means switch is not turned on and 1 means switch is turned on)
 int hazardPriority = 0; //initial hazard signal switch value (0 means switch is not turned on and 1 means switch is turned on)
 
-unsigned long dutySwitchTime=0;
+long dutySwitchTime=0;
 bool dutyOn=true;
 
-unsigned long hornTime=-500;
-unsigned long blinkTime=-500;
+long hornTime=-1000;
+long blinkTime=-500;
 bool blinkOn=true;
 
 bool runningLights=false;
@@ -41,8 +41,8 @@ bool windFan = false;
 bool brake = false;
 bool honk = false;
 
-void updateStates(unsigned long currentTime);
-void driveTransistors(unsigned long currentTime);
+void updateStates(long currentTime);
+void driveTransistors(long currentTime);
 
 void setup() {
   // setting all the lights, fan, and horn to be output mode
@@ -66,7 +66,7 @@ void setup() {
 }
 
 void loop() {
-  unsigned long currentTime=millis();
+  long currentTime=millis();
   updateStates(currentTime);
 
   if(currentTime>(1+dutySwitchTime)){ //if 5 ms passed, switch duty on to off
@@ -82,7 +82,7 @@ void loop() {
   driveTransistors(currentTime);
 }
 
-void updateStates(unsigned long currentTime){
+void updateStates(long currentTime){
   if(analogRead(sRunning) == 0){ //running lights switch
     runningLights=true;
   }
@@ -150,7 +150,7 @@ void updateStates(unsigned long currentTime){
 }
 
 
-void driveTransistors(unsigned long currentTime){
+void driveTransistors(long currentTime){
   digitalWrite(fan, windFan); //turns 
 
   digitalWrite(BL, (dutyOn&runningLights) || brake); //dim if running, always on when braking
@@ -159,7 +159,7 @@ void driveTransistors(unsigned long currentTime){
   digitalWrite(FR,headlights); //turn on headlights
   digitalWrite(FL,headlights); //turn on headlights
 
-  if(currentTime<(hornTime+500)){ //horn for 1/2 second
+  if(currentTime<(hornTime+250)){ //horn for 1/2 second
     digitalWrite(horn, HIGH);
   }else{
     digitalWrite(horn, LOW);
