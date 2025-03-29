@@ -63,7 +63,6 @@ void setup() {
   pinMode(sTurnLeft, INPUT_PULLUP);
   pinMode(sFan, INPUT_PULLUP);
   pinMode(sBrake, INPUT_PULLUP);
-  Serial.begin(9600); //initialize serial monitor
 }
 
 void loop() {
@@ -162,10 +161,8 @@ void driveTransistors(unsigned long currentTime){
 
   if(currentTime<(hornTime+500)){ //horn for 1/2 second
     digitalWrite(horn, HIGH);
-    Serial.println("Horn On");
   }else{
     digitalWrite(horn, LOW);
-    Serial.println("Horn Off");
   }
 
   digitalWrite(FLH, blinkOn & (hazards || leftTurn)); //turn on front left blinker
