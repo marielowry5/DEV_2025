@@ -27,6 +27,9 @@ int leftPriority = 0; //initial left turn signal switch value (0 means switch is
 int rightPriority = 0;  //initial right turn signal switch value (0 means switch is not turned on and 1 means switch is turned on)
 int hazardPriority = 0; //initial hazard signal switch value (0 means switch is not turned on and 1 means switch is turned on)
 
+unsigned long myTime; //variable that will hold the time it is when the switch is turned on
+unsigned long newTime = myTime + 500; //when newTime = myTime, it will stop whatever signal is turned on.
+
 void setup() {
   // setting all the lights, fan, and horn to be output mode
   pinMode(FL, OUTPUT);
@@ -77,11 +80,15 @@ void loop() {
     Serial.print("Hazards: On | ");
     if(leftPriority == 0 && rightPriority == 0){ //if left and right switches aren't on
       hazardPriority = 1;
+      myTime = millis();
       digitalWrite(FLH, HIGH); //front left hazard
       digitalWrite(FRH, HIGH); //front right hazard
       digitalWrite(BLH, HIGH); //back left hazard
       digitalWrite(BRH, HIGH); //back right hazard
-      delay(300); //BLINKING
+      while(myTime+300 < newTime)
+      {
+        newTime--;
+      }
       digitalWrite(FLH, LOW);
       digitalWrite(FRH, LOW);
       digitalWrite(BLH, LOW);
