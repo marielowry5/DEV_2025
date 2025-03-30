@@ -45,6 +45,7 @@ void updateStates(long currentTime);
 void driveTransistors(long currentTime);
 
 void setup() {
+  //Serial.begin(9600);
   // setting all the lights, fan, and horn to be output mode
   pinMode(FL, OUTPUT); //headlights 
   pinMode(FR, OUTPUT); //running
@@ -58,6 +59,7 @@ void setup() {
   pinMode(horn, OUTPUT); //horn
 
   // setting signaling, fan, and brake switches to input pullup
+  pinMode(sHL, INPUT_PULLUP);
   pinMode(sHazard, INPUT_PULLUP);
   pinMode(sTurnRight, INPUT_PULLUP);
   pinMode(sTurnLeft, INPUT_PULLUP);
@@ -66,6 +68,7 @@ void setup() {
 }
 
 void loop() {
+  //Serial.println("test");
   long currentTime=millis();
   updateStates(currentTime);
 
@@ -90,7 +93,7 @@ void updateStates(long currentTime){
     runningLights=false;
   }
 
-  if(analogRead(sHL) == 0){ //headlights switch
+  if(digitalRead(sHL) == LOW){ //headlights switch
     headlights=true;
   }
   else{ //if switch is off turn headlights off
@@ -144,7 +147,7 @@ void updateStates(long currentTime){
     brake=false;
   }
 
-  if(analogRead(sHorn) == 0){ //horn switch
+  if(analogRead(sHorn) <= 0){ //horn switch
     hornTime=currentTime;
   }
 }
@@ -161,6 +164,7 @@ void driveTransistors(long currentTime){
 
   if(currentTime<(hornTime+250)){ //horn for 1/2 second
     digitalWrite(horn, HIGH);
+    //Serial.println("Horn");
   }else{
     digitalWrite(horn, LOW);
   }
