@@ -86,50 +86,27 @@ void loop() {
 }
 
 void updateStates(long currentTime){
-  if(analogRead(sRunning) == 0){ //running lights switch
-    runningLights=true;
-  }
-  else{ //if switch is off turn running lights off
-    runningLights=false;
-  }
 
   if(digitalRead(sHL) == LOW){ //headlights switch
     headlights=true;
+    runningLights=true;
   }
   else{ //if switch is off turn headlights off
      headlights=false;
-  }
-
-  if(digitalRead(sHazard) == LOW){ //all hazards switch
-    if(leftPriority == 0 && rightPriority == 0){ //if left and right switches aren't on
-      hazardPriority = 1;
-      hazards=true;
-    }
-  }
-  else{ //if switch is off turn all hazards off
-    hazardPriority = 0;
-    hazards=false;
+     runningLights=false;
   }
 
   if(digitalRead(sTurnRight) == LOW){ //right turn switch
-    if(leftPriority == 0 && hazardPriority == 0){ //if left turn and hazard switches are off
-      rightPriority = 1;
-      rightTurn=true;
-    }
+    rightTurn=true;
   }
   else{ //if right turn switch is off, turn off right turn lights
-    rightPriority = 0;
     rightTurn=false;
   }
 
   if(digitalRead(sTurnLeft) == LOW){ //left turn switch
-    if(rightPriority == 0 && hazardPriority == 0){ //if right turn and hazard switches are off
-      leftPriority = 1;
       leftTurn=true;
-    }
   }
   else{ //if left turn switch is off, turn off left turn lights
-    leftPriority = 0;
     leftTurn=false;
   }
 
@@ -140,14 +117,14 @@ void updateStates(long currentTime){
     windFan=false;
   }
 
-  if(digitalRead(sBrake) == LOW){ //brakes switch (from pedal sensor)
+  if(digitalRead(sBrake) == HIGH){ //brakes switch (from pedal sensor)
     brake=true;
   }
   else{ //if brakes aren't pushed, turn brake lights off
     brake=false;
   }
 
-  if(analogRead(sHorn) <= 0){ //horn switch
+  if(digitalRead(sHazard) <= LOW){ //horn switch
     hornTime=currentTime;
   }
 }
@@ -156,8 +133,8 @@ void updateStates(long currentTime){
 void driveTransistors(long currentTime){
   digitalWrite(fan, windFan); //turns 
 
-  digitalWrite(BL, (dutyOn&runningLights) || brake); //dim if running, always on when braking
-  digitalWrite(BR, (dutyOn&runningLights) || brake); //dim if running, always on when breaking
+  digitalWrite(BL, (dutyOn&headlights) || brake); //dim if running, always on when braking
+  digitalWrite(BR, (dutyOn&headlights) || brake); //dim if running, always on when breaking
 
   digitalWrite(FR,headlights); //turn on headlights
   digitalWrite(FL,headlights); //turn on headlights
