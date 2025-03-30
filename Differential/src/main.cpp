@@ -18,7 +18,9 @@
 
 //Power Registers
 #define PWR_MGMT_1 0x6B //Used to wake up sensor
+#define inputWheelSpeedLeft A2
 #define inputWheelSpeedRight A4
+
 
 //-----------------------------------------------------------------
 //Pin Declarations
@@ -40,7 +42,7 @@ const int wheelBase= 100; //from front wheel axle to back wheel axle (inches)
 const int trackWidth = 50; //horizontal distance between wheels (inches)
 
 //Control Constants
-const int adjustSpeed = 30; //sets the analogWrite to decrease by 30 intervals by differential
+const int adjustSpeed = 10; //sets the analogWrite to decrease by 30 intervals by differential
 
 //Gyro Constants
 unsigned long lastGyroTime = 0; //stores last time gyro was updated to get dt
@@ -108,24 +110,25 @@ Serial.read();
 }
 }
 */
+int analogLeftSpeed = analogRead(inputWheelSpeedLeft);
 int analogRightSpeed = analogRead(inputWheelSpeedRight);
-Serial.println(actualRightSpeed);
+
 
 //multiply the original input by 5 and divide it by 1023
 //3.3/255 which is voltage per step
 //divide the voltage by voltage per step --> this is the number of steps which is a value between 0 and 255
 
-float rightSpeedToVoltage = (analogRightSpeed*5.0)/1023;
 float voltsPerStep = 3.3/255;
+
+float leftSpeedToVoltage = (analogLeftSpeed*5.0)/1023;
+float scaledLeftSpeed = leftSpeedToVoltage/voltsPerStep; //should be a value between 0 and 255
+actualLeftSpeed = (int) ((float)scaledLeftSpeed*2.0); //inches per second
+
+float rightSpeedToVoltage = (analogRightSpeed*5.0)/1023;
 float scaledRightSpeed = rightSpeedToVoltage/voltsPerStep; //should be a value between 0 and 255
 actualRightSpeed = (int) ((float)scaledRightSpeed*2.0); //inches per second
 
 
-
-Serial.println("scaled right speed");
-Serial.println(scaledRightSpeed);
-Serial.println("actual right speed");
-Serial.println(actualRightSpeed);
 int actualCenterSpeed=(actualLeftSpeed+actualRightSpeed)/2; //get the center of car speed
 int goalLeftSpeed = actualCenterSpeed * (leftRadius/ (float) centerRadius);
 int goalRightSpeed = actualCenterSpeed * (rightRadius/ (float) centerRadius);
