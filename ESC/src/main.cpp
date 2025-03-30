@@ -120,7 +120,7 @@ void loop() {                         // The loop function is called repeatedly,
     //----------------------------
     
     //Serial.println((int) motorState);
-    writePWM(motorState, 100);         // Actually command the transistors to switch into specified sequence and PWM value
+    writePWM(motorState, throttle);         // Actually command the transistors to switch into specified sequence and PWM value
   }
 
   //ZANE ADDED-----------------
