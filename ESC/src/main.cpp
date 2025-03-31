@@ -142,8 +142,9 @@ void updateVelocity(int state){
     t=current; //sets reference time to be current time
 
     //translate time between pulse to linear velocity (inputs dt, outputs in/sec)
-   
-    wheelVelocity = (int)((5.23598776 / dt)/gearRatio);   
+    
+    //2.0944 is the arc length per 12 degrees. Divide time to get velocity. Divide Gear Ration.
+    wheelVelocity = (int)((2.0944 / dt)/gearRatio);   
     return;
 } 
 //----------------------------
