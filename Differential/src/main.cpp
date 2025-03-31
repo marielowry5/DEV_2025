@@ -32,7 +32,7 @@
 #define RXR 28           // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 7)
 #define RXL 34           // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 8)
 #define throttleRight 5 // AnalogVoltage out to Right Motor
-#define throttleLeft 4  // AnalogVoltage out to Left Motor
+#define throttleLeft 6  // AnalogVoltage out to Left Motor
 
 //--------------------Global Variables---------------------------------------------
 // Car Constants
