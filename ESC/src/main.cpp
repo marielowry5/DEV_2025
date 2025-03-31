@@ -110,7 +110,7 @@ void loop() {                         // The loop function is called repeatedly,
   for(uint8_t i = 0; i < 200; i++)
   {  
     uint8_t hall = getHalls();              // Read from the hall sensors
-    //Serial.println((int) hall);
+    Serial.println((int) hall);
     
     uint8_t motorState = hallToMotor[hall]; // Convert from hall values (from 1 to 6) to motor state values (from 0 to 5) in the correct order. This line is magic
 
