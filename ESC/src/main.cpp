@@ -128,7 +128,10 @@ void loop() {                         // The loop function is called repeatedly,
   //Serial7.write(lowByte(wheelVelocity));
   //Serial7.write(highByte(wheelVelocity));
   //Serial.println(wheelVelocity);
-  analogWrite(speedOut, (int) ((float)wheelVelocity/(2.0)));
+  int scaledSpeed=(int) ((float)wheelVelocity/(1.5));
+  if(scaledSpeed<0) scaledSpeed=0;
+  if(scaledSpeed>255) scaledSpeed=255;
+  analogWrite(speedOut,scaledSpeed);
   //----------------------------
   
   // digitalWrite(LED_PIN, LOW);
