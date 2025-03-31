@@ -33,6 +33,7 @@ void updateVelocity(int hall);
 int wheelVelocity= 0; // in inches/sec
 unsigned long t= 0;
 int lastHallState=255;
+const int gearRatio=15;
 #define speedOut 29
 //----------------------------
 
@@ -141,10 +142,8 @@ void updateVelocity(int state){
     t=current; //sets reference time to be current time
 
     //translate time between pulse to linear velocity (inputs dt, outputs in/sec)
-    //Velocity = (2pi/30) * (10 inches) * (1/dt)
-    //wheelVelocity=(int)(2.0*PI/30.0) * 10.0 * (1.0/dt);
-    //wheelVelocity=(int) ((2.0*PI)/(3.0*dt));
-    wheelVelocity = (int)((10.0 / 30.0) * (1.0 / dt));   
+   
+    wheelVelocity = (int)((5.23598776 / dt)/gearRatio);   
     return;
 } 
 //----------------------------
