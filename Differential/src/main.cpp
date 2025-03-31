@@ -118,11 +118,11 @@ void differentialFunction(float angle)
 
   float leftSpeedToVoltage = (analogLeftSpeed * 5.0) / 1023;
   float scaledLeftSpeed = leftSpeedToVoltage / voltsPerStep; // should be a value between 0 and 255
-  actualLeftSpeed = (int)((float)scaledLeftSpeed * 2.0);     // inches per second
+  actualLeftSpeed = (int)((float)scaledLeftSpeed * 1.5);     // inches per second
 
   float rightSpeedToVoltage = (analogRightSpeed * 5.0) / 1023;
   float scaledRightSpeed = rightSpeedToVoltage / voltsPerStep; // should be a value between 0 and 255
-  actualRightSpeed = (int)((float)scaledRightSpeed * 2.0);     // inches per second
+  actualRightSpeed = (int)((float)scaledRightSpeed * 1.5);     // inches per second
 
   int actualCenterSpeed = (actualLeftSpeed + actualRightSpeed) / 2; // get the center of car speed
   int goalLeftSpeed = actualCenterSpeed * (leftRadius / (float)centerRadius);
