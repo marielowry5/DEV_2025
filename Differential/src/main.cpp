@@ -18,8 +18,8 @@
 
 // Power Registers
 #define PWR_MGMT_1 0x6B // Used to wake up sensor
-#define inputWheelSpeedLeft A2
-#define inputWheelSpeedRight A4
+#define inputWheelSpeedLeft A4
+#define inputWheelSpeedRight A2
 
 //-----------------------------------------------------------------
 // Pin Declarations
