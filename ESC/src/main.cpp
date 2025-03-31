@@ -96,7 +96,7 @@ void setup() {                // The setup function is called ONCE on boot-up
 
   pinMode(THROTTLE_PIN, INPUT);
   
-//  identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
+  identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
 }
 
 void loop() {                         // The loop function is called repeatedly, once setup() is done
