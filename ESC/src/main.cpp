@@ -1,9 +1,8 @@
 #include <Arduino.h>
-#include <HardwareSerial.h>
 
 // #define HWSERIAL Serial1  // serial port for debugging, bluetooth 
 
-#define THROTTLE_PIN 38       // Throttle pin
+#define THROTTLE_PIN 27       // Throttle pin
 #define THROTTLE_LOW 150      // These LOW and HIGH values are used to scale the ADC reading. More on this below
 #define THROTTLE_HIGH 710
 #define HALL_1_PIN 24       // hall A
@@ -66,14 +65,14 @@ void identifyHalls();
 void writePWM(uint8_t motorState, uint8_t dutyCycle);
 void writePhases(uint8_t ah, uint8_t bh, uint8_t ch, uint8_t al, uint8_t bl, uint8_t cl);
 uint8_t getHalls();
-uint8_t readThrottle();
+int readThrottle();
 
 void setup() {                // The setup function is called ONCE on boot-up
   Serial.begin(115200);
-  Serial.println("test");
+  //Serial.println("test");
 
   //ZANE ADDED-----------------
-  Serial7.begin(115200);
+  //Serial7.begin(115200);
   //----------------------------
 
 
@@ -95,18 +94,19 @@ void setup() {                // The setup function is called ONCE on boot-up
   analogWriteFrequency(BH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
   analogWriteFrequency(CH_PIN, 8000); // Set the PWM frequency. Since all pins are on the same timer, this sets PWM freq for all
 
+
   pinMode(HALL_1_PIN, INPUT);         // Set the hall pins as input
   pinMode(HALL_2_PIN, INPUT);
   pinMode(HALL_3_PIN, INPUT);
 
   pinMode(THROTTLE_PIN, INPUT);
   
-//  identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
+  //identifyHalls();                  // Uncomment this if you want the controller to auto-identify the hall states at startup!
 }
 
 void loop() {                         // The loop function is called repeatedly, once setup() is done
   
-  uint8_t throttle = readThrottle();  // readThrottle() is slow. So do the more important things 200 times more often
+  uint8_t throttle = (uint8_t) readThrottle();  // readThrottle() is slow. So do the more important things 200 times more often
   for(uint8_t i = 0; i < 200; i++)
   {  
     uint8_t hall = getHalls();              // Read from the hall sensors
@@ -119,13 +119,14 @@ void loop() {                         // The loop function is called repeatedly,
     //----------------------------
     
     //Serial.println((int) motorState);
-    writePWM(motorState, 200);         // Actually command the transistors to switch into specified sequence and PWM value
+    //writePWM(motorState, throttle);         // Actually command the transistors to switch into specified sequence and PWM value
+    writePWM(motorState, throttle);
   }
 
   //ZANE ADDED-----------------
   //Serial7.write(lowByte(wheelVelocity));
   //Serial7.write(highByte(wheelVelocity));
-  Serial.println(wheelVelocity);
+  //Serial.println(wheelVelocity);
   analogWrite(speedOut, (int) ((float)wheelVelocity/(2.0)));
   //----------------------------
   
@@ -167,8 +168,8 @@ void identifyHalls()
   for(uint8_t i = 0; i < 6; i++)
   {
     uint8_t nextState = (i + 1) % 6;        // Calculate what the next state should be. This is for switching into half-states
-    Serial.print("Going to ");
-    Serial.println(i);
+    //Serial.print("Going to ");
+    //Serial.println(i);
     // HWSERIAL.print("Going to ");
     // HWSERIAL.println(i);
     for(uint16_t j = 0; j < 200; j++)       // For a while, repeatedly switch between states
@@ -186,10 +187,10 @@ void identifyHalls()
   
   for(uint8_t i = 0; i < 8; i++)            // Print out the array
   {
-    Serial.print(hallToMotor[i]);
-    Serial.print(", ");
+    //Serial.print(hallToMotor[i]);
+    //Serial.print(", ");
   }
-  Serial.println();
+  //Serial.println();
 }
 
 /* This function takes a motorState (from 0 to 5) as an input, and decides which transistors to turn on
@@ -200,12 +201,10 @@ void identifyHalls()
 
 void writePWM(uint8_t motorState, uint8_t dutyCycle)
 {
-  Serial.println(motorState);
   if(dutyCycle == 0)                          // If zero throttle, turn all off
     motorState = 255;
-  /*
+
   if(motorState == 0)                         // LOW A, HIGH B
-      //a high, b high, c high, a low, b low, c low
       writePhases(0, dutyCycle, 0, 1, 0, 0);
   else if(motorState == 1)                    // LOW A, HIGH C
       writePhases(0, 0, dutyCycle, 1, 0, 0);
@@ -219,11 +218,7 @@ void writePWM(uint8_t motorState, uint8_t dutyCycle)
       writePhases(0, dutyCycle, 0, 0, 0, 1);
   else                                        // All off
       writePhases(0, 0, 0, 0, 0, 0);
-
-  */ 
- writePhases(0, dutyCycle, 0, 0, 0, 1);
 }
-      
 
 /* Helper function to actually write values to transistors. For the low sides, takes a 0 or 1 for on/off
  * For high sides, takes 0-255 for PWM value
@@ -265,6 +260,7 @@ uint8_t getHalls()
     hall |= (1<<1);                             // Store a 1 in the 1st bit
   if (hallCounts[2] >= HALL_OVERSAMPLE / 2)
     hall |= (1<<2);                             // Store a 1 in the 2nd bit
+
   return hall & 0x7;                            // Just to make sure we didn't do anything stupid, set the maximum output value to 7
 }
 
@@ -272,15 +268,19 @@ uint8_t getHalls()
  * scale the throttle reading to take up the full range of 0-255
  */
 
-uint8_t readThrottle()
+int readThrottle()
 {
+  /*
   int32_t adc = analogRead(THROTTLE_PIN); // Note, analogRead can be slow!
   adc = (adc - THROTTLE_LOW) << 8;
   adc = adc / (THROTTLE_HIGH - THROTTLE_LOW);
 
   adc /= 395.0/255;
+  */
+  int adc = analogRead(THROTTLE_PIN);
+  adc= (int) (adc/(1023.0/255.0));
 
-  // Serial.println(adc);
+  Serial.println(adc);
 
   if (adc > 255) // Bound the output between 0 and 255
     return 255;
