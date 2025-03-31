@@ -70,12 +70,6 @@ uint8_t readThrottle();
 
 void setup() {                // The setup function is called ONCE on boot-up
   Serial.begin(115200);
-  Serial.println("test");
-
-  //ZANE ADDED-----------------
-  Serial7.begin(115200);
-  //----------------------------
-
 
   analogReadResolution(10);  // Set ADC to 10-bit mode (0-1023)
   // HWSERIAL.begin(115200);
@@ -111,7 +105,7 @@ void loop() {                         // The loop function is called repeatedly,
   for(uint8_t i = 0; i < 200; i++)
   {  
     uint8_t hall = getHalls();              // Read from the hall sensors
-    //Serial.println((int) hall);
+    Serial.println((int) hall);
     
     uint8_t motorState = hallToMotor[hall]; // Convert from hall values (from 1 to 6) to motor state values (from 0 to 5) in the correct order. This line is magic
 
@@ -120,13 +114,12 @@ void loop() {                         // The loop function is called repeatedly,
     //----------------------------
     
     //Serial.println((int) motorState);
-    writePWM(motorState, throttle);         // Actually command the transistors to switch into specified sequence and PWM value
+    writePWM(motorState, 100);         // Actually command the transistors to switch into specified sequence and PWM value
   }
 
   //ZANE ADDED-----------------
   //Serial7.write(lowByte(wheelVelocity));
   //Serial7.write(highByte(wheelVelocity));
-  Serial.println(wheelVelocity);
   analogWrite(speedOut, (int) ((float)wheelVelocity/(2.0)));
   //----------------------------
   
