@@ -128,7 +128,7 @@ void loop() {                         // The loop function is called repeatedly,
   //Serial7.write(lowByte(wheelVelocity));
   //Serial7.write(highByte(wheelVelocity));
   //Serial.println(wheelVelocity);
-  int scaledSpeed=(int) ((float)wheelVelocity/(1.5));
+  int scaledSpeed=(int) ((float)wheelVelocity/(1.75));
   if(scaledSpeed<0) scaledSpeed=0;
   if(scaledSpeed>255) scaledSpeed=255;
   analogWrite(speedOut,scaledSpeed);
