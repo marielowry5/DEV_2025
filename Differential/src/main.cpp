@@ -31,8 +31,9 @@
 #define throttleIn A0    // throttle in from pedal (41) (0-5)
 #define RXR 28           // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 7)
 #define RXL 34           // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 8)
-#define throttleRight 5 // AnalogVoltage out to Right Motor
 #define throttleLeft 3  // AnalogVoltage out to Left Motor
+#define throttleRight 5 // AnalogVoltage out to Right Motor
+
 
 //--------------------Global Variables---------------------------------------------
 // Car Constants
@@ -158,7 +159,13 @@ void differentialFunction(float angle)
     throttleRightValue = 0;
 
   int scaledThrottleLeft = (int)(((throttleLeftValue / 1023.0) * 255.0) / 1.51515152);
-  int scaledThrottleRight = (int)(((throttleRightValue / 1023.0) * 255.0) / 1.51515152);
+  int scaledThrottleRight = (int)(((throttleRightValue / 1023.0) * 255.0) / 1.51515152);\
+
+  if (scaledThrottleLeft<0) scaledThrottleLeft=0;
+  if (scaledThrottleLeft>168) scaledThrottleLeft=168;
+
+  if (scaledThrottleRight<0) scaledThrottleRight=0;
+  if (scaledThrottleRight>168) scaledThrottleRight=168;
 
   analogWrite(throttleLeft, scaledThrottleLeft);
   analogWrite(throttleRight, scaledThrottleRight);
