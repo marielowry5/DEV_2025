@@ -68,7 +68,7 @@ float accelNoise = 0.03;     // Noise of 8 (mg-rms) (Sheet 3.2) (standard deviat
 int differential[2] = {0, 0};
 
 // milsecond time till the code started running
-const long interval = 10;
+const long interval = 25;
 unsigned long previousMillis = 0;
 
 //-----------------------------------------------------------------
@@ -129,6 +129,13 @@ void differentialFunction(float angle)
   int goalLeftSpeed = actualCenterSpeed * (leftRadius / (float)centerRadius);
   int goalRightSpeed = actualCenterSpeed * (rightRadius / (float)centerRadius);
 
+  if (abs(goalLeftSpeed)<10) goalLeftSpeed=0;
+  if (abs(goalRightSpeed)<10) goalRightSpeed=0;
+
+  if (abs(actualRightSpeed)<10) actualRightSpeed=0;
+  if (abs(actualLeftSpeed)<10) actualLeftSpeed=0;
+
+
   if (goalLeftSpeed != actualLeftSpeed)
     differential[0] += (goalLeftSpeed - actualLeftSpeed) / abs(goalLeftSpeed - actualLeftSpeed); // decrease ofset of left if too fast
   if (goalRightSpeed != actualRightSpeed)
@@ -162,10 +169,10 @@ void differentialFunction(float angle)
   int scaledThrottleRight = (int)(((throttleRightValue / 1023.0) * 255.0) / 1.51515152);\
 
   if (scaledThrottleLeft<0) scaledThrottleLeft=0;
-  if (scaledThrottleLeft>168) scaledThrottleLeft=168;
+  if (scaledThrottleLeft>155) scaledThrottleLeft=155;
 
   if (scaledThrottleRight<0) scaledThrottleRight=0;
-  if (scaledThrottleRight>168) scaledThrottleRight=168;
+  if (scaledThrottleRight>155) scaledThrottleRight=155;
 
   analogWrite(throttleLeft, scaledThrottleLeft);
   analogWrite(throttleRight, scaledThrottleRight);
@@ -310,7 +317,7 @@ void loop()
   // Serial.println(estimatedYawAngle); //print angle for debugging
 
   // TO DOOOO
-  float ccwAngle = -1.0 * estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
+  float ccwAngle = 1.0 * estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
   if (abs(ccwAngle)<10) ccwAngle=0;
   // TO DO: Input formula to convert steering wheel angle to actual angle
 
@@ -324,4 +331,5 @@ void loop()
     previousMillis = currentTime;
     differentialFunction(ccwAngle);
   }
+  delay(10);
 }
