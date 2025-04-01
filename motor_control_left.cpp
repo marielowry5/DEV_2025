@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-// #define HWSERIAL Serial1  // serial port for debugging, bluetooth 
+// left motor control code 
 
 #define THROTTLE_PIN 27       // Throttle pin
 #define THROTTLE_LOW 150      // These LOW and HIGH values are used to scale the ADC reading. More on this below
@@ -20,8 +20,6 @@
 #define LED_PIN 13            // The teensy has a built-in LED on pin 13
 
 #define HALL_OVERSAMPLE 4     // Hall oversampling count. More on this in the getHalls() function
-
-//uint8_t hallToMotor[8] = {255, 0, 2, 1, 4, 5, 3, 255}; // PROBLEM: how to know phase order? 
 
 uint8_t hallToMotor[8] = {255, 4, 0, 5, 2, 3, 1, 255}; // old motor state order from 24V motor 
 

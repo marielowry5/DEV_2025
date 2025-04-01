@@ -56,31 +56,6 @@ unsigned long t= 0;
 int lastHallState=255;
 const int gearRatio=15;
 #define speedOut 29
-//----------------------------
-
-
-
-
-/*
-Marie revision to motor state order 
-
-Motor state order based on writePWM function 
-Index 1: B high, A low 
-Index 2: C high, A low 
-Index 3: C high, B low
-Index 4: A high, B low
-Index 5: A high, C low
-Index 6: B high, C low
-
-State Index 1: B high, A low 
-Index 2: C high, A low 
-Index 3: C high, B low
-Index 4: A high, B low
-Index 5: A high, C low
-Index 6: B high, C low
-
-Need 
-*/
 
 
 // Forward declarations
@@ -156,10 +131,7 @@ void loop() {                         // The loop function is called repeatedly,
   analogWrite(speedOut,scaledSpeed);
   //----------------------------
   
-  // digitalWrite(LED_PIN, LOW);
-  // delay(1000);
-  // digitalWrite(LED_PIN, HIGH);
-  // delay(1000);
+
 }
 
 //ZANE ADDED-----------------
