@@ -28,9 +28,13 @@
 #define MISO 12 // IMU to Board
 #define SCK 13  // SPI Clock
 
+<<<<<<< HEAD
 #define throttleIn A0   // throttle in from pedal (41) (0-5)
 #define RXR 28          // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 7)
 #define RXL 34          // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 8)
+=======
+#define throttleIn A0    // throttle in from pedal (41) (0-5)
+>>>>>>> 48ddaf6749ce9d808499438c77fb25082ba1c4c9
 #define throttleLeft 3  // AnalogVoltage out to Left Motor
 #define throttleRight 5 // AnalogVoltage out to Right Motor
 
