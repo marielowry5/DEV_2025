@@ -146,9 +146,9 @@ void driveTransistors(long currentTime){
     digitalWrite(horn, LOW);
   }
 
-  digitalWrite(FLH, blinkOn & (hazards || leftTurn)); //turn on front left blinker
-  digitalWrite(FRH, blinkOn & (hazards || rightTurn)); //turn on back right blinker
+  digitalWrite(FLH, blinkOn & leftTurn); //turn on front left blinker
+  digitalWrite(FRH, blinkOn & rightTurn); //turn on back right blinker
 
-  digitalWrite(BLH, blinkOn & (hazards || leftTurn)); //turn on back left blinker
-  digitalWrite(BRH, blinkOn & (hazards || rightTurn)); //turn on back right blinker
+  digitalWrite(BLH, blinkOn & leftTurn); //turn on back left blinker
+  digitalWrite(BRH, blinkOn & rightTurn); //turn on back right blinker
 }

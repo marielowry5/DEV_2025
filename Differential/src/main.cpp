@@ -28,12 +28,11 @@
 #define MISO 12 // IMU to Board
 #define SCK 13  // SPI Clock
 
-#define throttleIn A0    // throttle in from pedal (41) (0-5)
-#define RXR 28           // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 7)
-#define RXL 34           // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 8)
+#define throttleIn A0   // throttle in from pedal (41) (0-5)
+#define RXR 28          // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 7)
+#define RXL 34          // Read Velocity from Right Wheel in uint16 in inches/sec (Serial 8)
 #define throttleLeft 3  // AnalogVoltage out to Left Motor
 #define throttleRight 5 // AnalogVoltage out to Right Motor
-
 
 //--------------------Global Variables---------------------------------------------
 // Car Constants
@@ -119,22 +118,25 @@ void differentialFunction(float angle)
 
   float leftSpeedToVoltage = (analogLeftSpeed * 5.0) / 1023;
   float scaledLeftSpeed = leftSpeedToVoltage / voltsPerStep; // should be a value between 0 and 255
-  actualLeftSpeed = (int)((float)scaledLeftSpeed * 1.75);     // inches per second
+  actualLeftSpeed = (int)((float)scaledLeftSpeed * 1.75);    // inches per second
 
   float rightSpeedToVoltage = (analogRightSpeed * 5.0) / 1023;
   float scaledRightSpeed = rightSpeedToVoltage / voltsPerStep; // should be a value between 0 and 255
-  actualRightSpeed = (int)((float)scaledRightSpeed * 1.75);     // inches per second
+  actualRightSpeed = (int)((float)scaledRightSpeed * 1.75);    // inches per second
 
   int actualCenterSpeed = (actualLeftSpeed + actualRightSpeed) / 2; // get the center of car speed
   int goalLeftSpeed = actualCenterSpeed * (leftRadius / (float)centerRadius);
   int goalRightSpeed = actualCenterSpeed * (rightRadius / (float)centerRadius);
 
-  if (abs(goalLeftSpeed)<10) goalLeftSpeed=0;
-  if (abs(goalRightSpeed)<10) goalRightSpeed=0;
+  if (abs(goalLeftSpeed) < 10)
+    goalLeftSpeed = 0;
+  if (abs(goalRightSpeed) < 10)
+    goalRightSpeed = 0;
 
-  if (abs(actualRightSpeed)<10) actualRightSpeed=0;
-  if (abs(actualLeftSpeed)<10) actualLeftSpeed=0;
-
+  if (abs(actualRightSpeed) < 10)
+    actualRightSpeed = 0;
+  if (abs(actualLeftSpeed) < 10)
+    actualLeftSpeed = 0;
 
   if (goalLeftSpeed != actualLeftSpeed)
     differential[0] += (goalLeftSpeed - actualLeftSpeed) / abs(goalLeftSpeed - actualLeftSpeed); // decrease ofset of left if too fast
@@ -145,12 +147,14 @@ void differentialFunction(float angle)
   if (differential[1] > 0)
     differential[1] = 0; // prevent speeding up the right wheel
 
-  if (differential[0]>(1023/adjustSpeed)) differential[0]=(1023/adjustSpeed);
-  if (differential[1]>(1023/adjustSpeed)) differential[1]=(1023/adjustSpeed);
+  if (differential[0] > (1023 / adjustSpeed))
+    differential[0] = (1023 / adjustSpeed);
+  if (differential[1] > (1023 / adjustSpeed))
+    differential[1] = (1023 / adjustSpeed);
 
   int voltageIn = (int)(analogRead(throttleIn)); // Reads throttle in from 0-2.5V and converts to 1-1023
   // Serial.println(voltageIn);
-  if (voltageIn > 1023-50)
+  if (voltageIn > 1023 - 50)
     voltageIn = 1023; // ensures max is 1023 and allows max speed to hold
   if (voltageIn < 50)
     voltageIn = 0; // ensures min is 0 and allows off to hold
@@ -166,13 +170,17 @@ void differentialFunction(float angle)
     throttleRightValue = 0;
 
   int scaledThrottleLeft = (int)(((throttleLeftValue / 1023.0) * 255.0) / 1.51515152);
-  int scaledThrottleRight = (int)(((throttleRightValue / 1023.0) * 255.0) / 1.51515152);\
+  int scaledThrottleRight = (int)(((throttleRightValue / 1023.0) * 255.0) / 1.51515152);
 
-  if (scaledThrottleLeft<0) scaledThrottleLeft=0;
-  if (scaledThrottleLeft>155) scaledThrottleLeft=155;
+  if (scaledThrottleLeft < 0)
+    scaledThrottleLeft = 0;
+  if (scaledThrottleLeft > 155)
+    scaledThrottleLeft = 155;
 
-  if (scaledThrottleRight<0) scaledThrottleRight=0;
-  if (scaledThrottleRight>155) scaledThrottleRight=155;
+  if (scaledThrottleRight < 0)
+    scaledThrottleRight = 0;
+  if (scaledThrottleRight > 155)
+    scaledThrottleRight = 155;
 
   analogWrite(throttleLeft, scaledThrottleLeft);
   analogWrite(throttleRight, scaledThrottleRight);
@@ -302,34 +310,34 @@ void setup()
 // Loop Function
 void loop()
 {
-
-  //---------------------Gets Angle of Steering Wheel------------------------------//
-  int16_t gyroRaw = readGyroVelocity();      // get binary gyro value
-  float gyroDPS = gyroRaw / gyroSensitivity; // convert to degrees per second
-
-  int16_t accelYaw = readAccelYaw(); // get accerometer degreeth
-
-  unsigned long t = millis();             // get time
-  float dt = (t - lastGyroTime) / 1000.0; // get change in time in seconds
-  lastGyroTime = t;
-
-  kalmanFilter(accelYaw, gyroDPS, dt); // run kalman fiter
-  // Serial.println(estimatedYawAngle); //print angle for debugging
-
-  // TO DOOOO
-  float ccwAngle = 1.0 * estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
-  if (abs(ccwAngle)<10) ccwAngle=0;
-  // TO DO: Input formula to convert steering wheel angle to actual angle
-
-  // int voltageIn = analogRead(throttleIn);
-  // Serial.println(voltageIn);
-
-  // get the right wheel velocity
   unsigned long currentTime = millis();
   if (currentTime - previousMillis >= interval)
   {
+
+    //---------------------Gets Angle of Steering Wheel------------------------------//
+    int16_t gyroRaw = readGyroVelocity();      // get binary gyro value
+    float gyroDPS = gyroRaw / gyroSensitivity; // convert to degrees per second
+
+    int16_t accelYaw = readAccelYaw(); // get accerometer degreeth
+
+    unsigned long t = millis();             // get time
+    float dt = (t - lastGyroTime) / 1000.0; // get change in time in seconds
+    lastGyroTime = t;
+
+    kalmanFilter(accelYaw, gyroDPS, dt); // run kalman fiter
+    // Serial.println(estimatedYawAngle); //print angle for debugging
+
+    // TO DOOOO
+    float ccwAngle = 1.0 * estimatedYawAngle; // TO DO: CHANGE TO -1 if yaw angle not CCW Positive
+    if (abs(ccwAngle) < 10)
+      ccwAngle = 0;
+    // TO DO: Input formula to convert steering wheel angle to actual angle
+
+    // int voltageIn = analogRead(throttleIn);
+    // Serial.println(voltageIn);
+
+    // get the right wheel velocity
     previousMillis = currentTime;
     differentialFunction(ccwAngle);
   }
-  delay(10);
 }
